@@ -226,7 +226,8 @@ public class TaskbarControllers {
             mCornerRoundness.value = taskbarDesktopModeController.getTaskbarCornerRoundness(
                     mSharedState.showCornerRadiusInDesktopMode);
         } else {
-            mCornerRoundness.value = TaskbarBackgroundRenderer.MAX_ROUNDNESS;
+            mCornerRoundness.value = TaskbarCornerRoundness.resolve(
+                    taskbarActivityContext.isDesktopFormFactor(), /* isRoundingRequested= */ true);
         }
         updateCornerRoundness();
         onPostInit();

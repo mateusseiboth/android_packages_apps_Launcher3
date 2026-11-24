@@ -19,7 +19,6 @@ package com.android.launcher3.taskbar
 import com.android.launcher3.display.DisplayController
 import com.android.launcher3.statehandlers.DesktopVisibilityController
 import com.android.launcher3.statehandlers.DesktopVisibilityController.DesktopVisibilityListener
-import com.android.launcher3.taskbar.TaskbarBackgroundRenderer.Companion.MAX_ROUNDNESS
 import com.android.launcher3.util.Executors.getTaskbarUiThread
 import com.android.launcher3.util.SafeCloseable
 
@@ -81,13 +80,11 @@ class TaskbarDesktopModeController(
             taskbarActivityContext.showDesktopTaskbarForFreeformDisplay()
     }
 
-    fun getTaskbarCornerRoundness(doesAnyTaskRequireTaskbarRounding: Boolean): Float {
-        return if (doesAnyTaskRequireTaskbarRounding) {
-            MAX_ROUNDNESS
-        } else {
-            0f
-        }
-    }
+    fun getTaskbarCornerRoundness(doesAnyTaskRequireTaskbarRounding: Boolean): Float =
+        TaskbarCornerRoundness.resolve(
+            taskbarActivityContext.isDesktopFormFactor,
+            doesAnyTaskRequireTaskbarRounding,
+        )
 
     fun onDestroy() {
         desktopVisibilityController.unregisterDesktopVisibilityListener(this)
