@@ -1361,6 +1361,15 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
     }
 
     /**
+     * Closes the floating views of the taskbar, All Apps included (it is shown through the
+     * overlay proxy view), and of the launcher when it is on this display.
+     */
+    public void closeFloatingViews() {
+        AbstractFloatingView.closeAllOpenViews(this);
+        mControllers.uiController.closeOpenLauncherViews();
+    }
+
+    /**
      * Hides the taskbar icons and background when the notification shade is expanded.
      */
     private void onNotificationShadeExpandChanged(long systemUiStateFlags,

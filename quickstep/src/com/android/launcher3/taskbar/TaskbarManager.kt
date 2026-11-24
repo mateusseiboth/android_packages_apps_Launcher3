@@ -50,6 +50,9 @@ interface TaskbarManager {
 
     fun checkNavBarModes(displayId: Int)
 
+    /** Closes the taskbar's All Apps and the floating views of the taskbar and launcher. */
+    fun closeFloatingViews(displayId: Int)
+
     fun finishBarAnimations(displayId: Int)
 
     fun touchAutoDim(displayId: Int, reset: Boolean)

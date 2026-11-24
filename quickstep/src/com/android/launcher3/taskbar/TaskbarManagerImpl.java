@@ -929,6 +929,13 @@ public class TaskbarManagerImpl {
         }
     }
 
+    /** Closes the taskbar's All Apps and the taskbar and launcher floating views on a display. */
+    public void closeFloatingViews(int displayId) {
+        TaskbarActivityContext taskbar = getTaskbarForDisplay(displayId);
+        if (taskbar == null) return;
+        taskbar.closeFloatingViews();
+    }
+
     public void finishBarAnimations(int displayId) {
         TaskbarActivityContext taskbar = getTaskbarForDisplay(displayId);
         if (taskbar != null) {

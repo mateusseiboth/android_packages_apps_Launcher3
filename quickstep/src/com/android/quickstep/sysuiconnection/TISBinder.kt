@@ -327,6 +327,11 @@ internal constructor(
     override fun onActionCornerActivated(action: Int, displayId: Int) =
         uiExecutor.execute { withState { actionCornerHandler?.handleAction(action, displayId) } }
 
+    @BinderThread
+    override fun closeFloatingViews(displayId: Int) = withState {
+        taskbarManager.closeFloatingViews(displayId)
+    }
+
     /**
      * Wrapper around all the objects inside the sysui connection graph. This is wrapped inside a
      * weak-reference as TISBinder can outlive sysUIConnection if the binder is held by another

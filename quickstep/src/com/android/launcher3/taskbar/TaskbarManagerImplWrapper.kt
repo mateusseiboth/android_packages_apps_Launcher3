@@ -89,6 +89,10 @@ class TaskbarManagerImplWrapper @Inject constructor(implProvider: Provider<Taskb
         getTaskbarUiThread().execute { impl.checkNavBarModes(displayId) }
     }
 
+    override fun closeFloatingViews(displayId: Int) {
+        getTaskbarUiThread().execute { impl.closeFloatingViews(displayId) }
+    }
+
     override fun finishBarAnimations(displayId: Int) {
         getTaskbarUiThread().execute { impl.finishBarAnimations(displayId) }
     }
