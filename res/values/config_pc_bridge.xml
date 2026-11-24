@@ -18,4 +18,9 @@
     <!-- Whether Home settings hides the up arrow of a sub screen that is the root of its task
          (opened directly, e.g. from a shortcut), where there is no screen to go up to. -->
     <bool name="config_settingsHidesUpArrowOnTaskRoot">false</bool>
+
+    <!-- Whether the taskbar stashes only for the SystemUI dialogs that ask for it
+         (SYSUI_STATE_DIALOG_STASH_TASKBAR) instead of for every SystemUI dialog
+         (SYSUI_STATE_DIALOG_SHOWING). -->
+    <bool name="config_taskbarStashesOnlyForDialogsThatAsk">false</bool>
 </resources>

@@ -64,6 +64,8 @@ import com.android.launcher3.taskbar.rules.TaskbarWindowSandboxContext
 import com.android.launcher3.util.Executors.getTaskbarUiThread
 import com.android.launcher3.util.RoboApiWrapper.convertToSpy
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BUBBLES_EXPANDED
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DIALOG_SHOWING
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DIALOG_STASH_TASKBAR
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_IME_VISIBLE
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.google.common.truth.Truth.assertThat
@@ -138,6 +140,25 @@ class TaskbarStashControllerTest {
     @TaskbarMode(PINNED)
     fun testInit_userSetupWithPinnedMode_stashedInApp() {
         assertThat(stashController.isStashedInApp).isTrue()
+    }
+
+    @Test
+    @TaskbarMode(PINNED)
+    fun testDialogShowing_byDefault_stashedInApp() {
+        runOnTaskbarUiThreadSync {
+            stashController.updateStateForSysuiFlags(SYSUI_STATE_DIALOG_SHOWING, true)
+        }
+        assertThat(stashController.isStashedInApp).isTrue()
+    }
+
+    @Test
+    @TaskbarMode(PINNED)
+    fun testDialogStashTaskbarOnly_byDefault_unstashedInApp() {
+        // config_taskbarStashesOnlyForDialogsThatAsk is off in AOSP: only DIALOG_SHOWING counts.
+        runOnTaskbarUiThreadSync {
+            stashController.updateStateForSysuiFlags(SYSUI_STATE_DIALOG_STASH_TASKBAR, true)
+        }
+        assertThat(stashController.isStashedInApp).isFalse()
     }
 
     @Test
