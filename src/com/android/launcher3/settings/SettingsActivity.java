@@ -118,8 +118,11 @@ public class SettingsActivity extends FragmentActivity
         });
 
         Intent intent = getIntent();
-        if (intent.hasExtra(EXTRA_FRAGMENT_ROOT_KEY) || intent.hasExtra(EXTRA_FRAGMENT_ARGS)
-                || intent.hasExtra(EXTRA_FRAGMENT_HIGHLIGHT_KEY)) {
+        boolean opensSubScreen = intent.hasExtra(EXTRA_FRAGMENT_ROOT_KEY)
+                || intent.hasExtra(EXTRA_FRAGMENT_ARGS)
+                || intent.hasExtra(EXTRA_FRAGMENT_HIGHLIGHT_KEY);
+        if (SettingsUpArrow.isShown(opensSubScreen, isTaskRoot(), getResources().getBoolean(
+                R.bool.config_settingsHidesUpArrowOnTaskRoot))) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
