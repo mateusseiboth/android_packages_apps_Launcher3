@@ -22,6 +22,7 @@ import android.content.Intent
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.launcher3.R
 import com.android.launcher3.model.data.AppInfo
 import com.android.launcher3.model.data.AppsListData
 import com.android.launcher3.util.SandboxApplication
@@ -124,6 +125,42 @@ class HandoffSuggestionRepositoryTest {
     }
 
     @Test
+    fun onRemoteTaskChanged_withDeviceName_labelsSuggestionWithAppAndDevice() {
+        val remoteTask =
+            createRemoteTask(
+                associationId = 1,
+                taskId = 1,
+                packageName = INSTALLED_APP_PACKAGE_NAME,
+                lastUsedTimestampMillis = 100,
+                isTaskInForeground = true,
+                associationDisplayName = "Pixel",
+            )
+        repository.listener.onRemoteTasksChanged(listOf(remoteTask))
+
+        val expected = context.getString(R.string.handoff_suggestion_label, "Second App", "Pixel")
+        assertThat(repository.suggestion.value?.itemInfoWithIcon?.title.toString())
+            .isEqualTo(expected)
+        assertThat(repository.suggestion.value?.itemInfoWithIcon?.contentDescription.toString())
+            .isEqualTo(expected)
+    }
+
+    @Test
+    fun onRemoteTaskChanged_withoutDeviceName_keepsAppLabel() {
+        val remoteTask =
+            createRemoteTask(
+                associationId = 1,
+                taskId = 1,
+                packageName = INSTALLED_APP_PACKAGE_NAME,
+                lastUsedTimestampMillis = 100,
+                isTaskInForeground = true,
+            )
+        repository.listener.onRemoteTasksChanged(listOf(remoteTask))
+
+        assertThat(repository.suggestion.value?.itemInfoWithIcon?.title.toString())
+            .isEqualTo("Second App")
+    }
+
+    @Test
     fun onRemoteTaskChanged_appNotInLauncher_setsSuggestionToNull() {
         val remoteTask =
             createRemoteTask(
@@ -147,8 +184,10 @@ class HandoffSuggestionRepositoryTest {
             packageName: String?,
             lastUsedTimestampMillis: Long,
             isTaskInForeground: Boolean,
+            associationDisplayName: String? = null,
         ): RemoteTask {
             return RemoteTask.Builder(associationId, taskId)
+                .setAssociationDisplayName(associationDisplayName)
                 .setPackageName(packageName)
                 .setLastUsedTimestampMillis(lastUsedTimestampMillis)
                 .setTaskInForeground(isTaskInForeground)

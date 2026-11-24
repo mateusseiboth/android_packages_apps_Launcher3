@@ -31,6 +31,7 @@ import com.android.launcher3.dagger.LauncherComponentProvider.appComponent
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.LauncherIcons.IconPool
+import com.android.launcher3.model.data.ItemInfoWithIcon
 import com.android.launcher3.model.repository.AppsListRepository
 import com.android.launcher3.util.DaggerSingletonTracker
 import com.android.launcher3.util.ListenableRef
@@ -90,12 +91,22 @@ constructor(
 
         val suggestionIconInfo = appInfo.clone()
         suggestionIconInfo.bitmap = appInfo.bitmap.copy(badgeInfo = handoffSuggestionBadge)
+        remoteTask.associationDisplayName
+            ?.takeIf { it.isNotBlank() }
+            ?.let { deviceName -> applyDeviceLabel(suggestionIconInfo, deviceName) }
 
         return HandoffSuggestion(
             remoteTask.companionDeviceAssociationId,
             remoteTask.taskId,
             suggestionIconInfo,
         )
+    }
+
+    /** Labels the suggestion with the app and the device it is open on, e.g. "Chrome on Pixel". */
+    private fun applyDeviceLabel(info: ItemInfoWithIcon, deviceName: String) {
+        val label = context.getString(R.string.handoff_suggestion_label, info.title, deviceName)
+        info.title = label
+        info.contentDescription = label
     }
 
     companion object {
