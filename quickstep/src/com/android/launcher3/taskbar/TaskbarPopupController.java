@@ -149,6 +149,8 @@ public class TaskbarPopupController implements TaskbarControllers.LoggableTaskba
         if (mControllers.taskbarActivityContext.areAppBubblesSupported()) {
             shortcuts.add(BUBBLE);
         }
+        // Apps in the taskbar's All Apps (desktop form factor only, see AllAppsUninstall).
+        shortcuts.add(SystemShortcut::createUninstallFromAllApps);
 
         if (Flags.enableMultiInstanceMenuTaskbar()
                 && DesktopModeStatus.canEnterDesktopMode(mContext)

@@ -479,23 +479,55 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
                 return new UninstallApp(activityContext, itemInfo, originalView, cn);
             };
 
+    /**
+     * "Uninstall" in the menu of an app in All Apps on the desktop form factor
+     * ({@link AllAppsUninstall}); system apps, which cannot be uninstalled, do not offer it.
+     */
+    @Nullable
+    public static <T extends ActivityContext> SystemShortcut<T> createUninstallFromAllApps(
+            T target, ItemInfo itemInfo, @Nullable View originalView) {
+        if (originalView == null) {
+            return null;
+        }
+        Context context = originalView.getContext();
+        boolean isDesktopFormFactor =
+                context.getResources().getBoolean(R.bool.desktop_form_factor);
+        if (!AllAppsUninstall.isOffered(itemInfo.container, isDesktopFormFactor)) {
+            return null;
+        }
+        ComponentName cn = SecondaryDropTarget.getUninstallTarget(context, itemInfo);
+        if (cn == null) {
+            return null;
+        }
+        return new UninstallApp<>(target, itemInfo, originalView, cn,
+                R.string.uninstall_drop_target_label, /* isPrivateSpace= */ false);
+    }
+
     private static class UninstallApp<T extends ActivityContext> extends SystemShortcut<T> {
         @NonNull
         ComponentName mComponentName;
+        private final boolean mIsPrivateSpace;
 
         UninstallApp(T target, ItemInfo itemInfo, @NonNull View originalView,
                 @NonNull ComponentName cn) {
-            super(R.drawable.ic_uninstall_no_shadow,
-                    R.string.uninstall_private_system_shortcut_label, target,
-                    itemInfo, originalView);
-            mComponentName = cn;
+            this(target, itemInfo, originalView, cn,
+                    R.string.uninstall_private_system_shortcut_label, /* isPrivateSpace= */ true);
+        }
 
+        UninstallApp(T target, ItemInfo itemInfo, @NonNull View originalView,
+                @NonNull ComponentName cn, int labelResId, boolean isPrivateSpace) {
+            super(R.drawable.ic_uninstall_no_shadow, labelResId, target, itemInfo, originalView);
+            mComponentName = cn;
+            mIsPrivateSpace = isPrivateSpace;
         }
 
         @Override
         public void onClick(View view) {
             dismissTaskMenuView();
             SecondaryDropTarget.performUninstall(view.getContext(), mComponentName, mItemInfo);
+            if (!mIsPrivateSpace) {
+                return;
+            }
             mTarget.getStatsLogManager()
                     .logger()
                     .withItemInfo(mItemInfo)
