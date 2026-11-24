@@ -51,10 +51,24 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
     private var isTaskbarInMinimalState = false
     private lateinit var taskbarViewCallbacks: TaskbarViewCallbacks
 
+    /** Pill shaped button of the desktop taskbar, or null for the round icon button. */
+    private val desktopPill: TaskbarAllAppsPill? =
+        TaskbarAllAppsPill(
+                widthPx = resources.getDimensionPixelSize(R.dimen.taskbar_all_apps_pill_width),
+                heightPx = resources.getDimensionPixelSize(R.dimen.taskbar_all_apps_pill_height),
+                iconSizePx =
+                    resources.getDimensionPixelSize(R.dimen.taskbar_all_apps_pill_icon_size),
+            )
+            .takeIf { activityContext.isDesktopFormFactor }
+
     override val spaceNeeded: Int
         get() {
-            return taskbarIconViewSize
+            return desktopPill?.widthPx ?: taskbarIconViewSize
         }
+
+    /** Width this button takes beyond an app icon's touch area. */
+    val extraWidth: Int
+        get() = desktopPill?.extraWidthOver(taskbarIconViewSize) ?: 0
 
     override val taskbarIconViewSize =
         dpToPx(activityContext.taskbarSpecsEvaluator.taskbarIconTouchSize, activityContext)
@@ -69,6 +83,10 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
     @SuppressLint("UseCompatLoadingForDrawables", "ResourceAsColor")
     private fun setUpIcon() {
+        desktopPill?.let {
+            setUpDesktopPill(it)
+            return
+        }
         val drawable =
             resources.getDrawable(
                 getAllAppsButton(activityContext.taskbarFeatureEvaluator.isTransient)
@@ -79,6 +97,35 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         width = spaceNeeded
         height = spaceNeeded
         setForegroundTint(activityContext.getColor(R.color.all_apps_button_color))
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun setUpDesktopPill(pill: TaskbarAllAppsPill) {
+        background = resources.getDrawable(R.drawable.taskbar_all_apps_pill_background, null)
+        backgroundTintList =
+            context.getColorStateList(R.color.taskbar_all_apps_pill_background_tint)
+        setIconDrawable(resources.getDrawable(R.drawable.ic_taskbar_all_apps_pill, null))
+        setPadding(
+            pill.horizontalPaddingPx,
+            pill.verticalPaddingPx,
+            pill.horizontalPaddingPx,
+            pill.verticalPaddingPx,
+        )
+        width = pill.widthPx
+        height = pill.heightPx
+        applyDesktopPillIconTint()
+    }
+
+    /** The desktop pill is highlighted while All Apps is open. */
+    override fun setActivated(activated: Boolean) {
+        super.setActivated(activated)
+        applyDesktopPillIconTint()
+    }
+
+    private fun applyDesktopPillIconTint() {
+        desktopPill ?: return
+        val tint = context.getColorStateList(R.color.taskbar_all_apps_pill_icon_tint)
+        setForegroundTint(tint.getColorForState(drawableState, tint.defaultColor))
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -125,7 +172,8 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 
     @DimenRes
     fun getAllAppsButtonTranslationXOffset(isTransientTaskbar: Boolean): Int {
-        if (Flags.enableGsf()) {
+        // The desktop pill sits in the icon row without an offset (0dp).
+        if (desktopPill != null || Flags.enableGsf()) {
             return R.dimen.taskbar_all_apps_search_button_translation_x_offset_for_expressive_theme
         }
         return if (isTransientTaskbar) {

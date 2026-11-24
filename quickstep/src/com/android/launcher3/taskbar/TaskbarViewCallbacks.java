@@ -85,10 +85,15 @@ public class TaskbarViewCallbacks {
             // apps, which will toggle the launcher activity all apps when on home screen.
             // TODO(b/395913143): Reconsider this if a gap in taskbar all apps functionality that
             //  prevents users to drag items to workspace is addressed.
-            mControllers.uiController.toggleAllApps(false);
-        } else {
-            mControllers.taskbarAllAppsController.toggle();
+            // As on a desktop, All Apps opens ready for typing a search.
+            mControllers.uiController.toggleAllApps(true);
+            return;
         }
+        if (mActivity.isDesktopFormFactor()) {
+            mControllers.taskbarAllAppsController.toggleSearch();
+            return;
+        }
+        mControllers.taskbarAllAppsController.toggle();
     }
 
     /** Trigger All Apps button long click action. */

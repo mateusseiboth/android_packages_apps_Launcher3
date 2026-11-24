@@ -295,6 +295,11 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
         return List.of();
     }
 
+    /** Whether All Apps is a floating panel (every corner rounded) rather than a bottom sheet. */
+    protected boolean isFloatingSheet() {
+        return false;
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -303,16 +308,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
                 /* Filter out A-Z apps */ itemInfo -> false);
         rebindAdapters(true /* force */);
         float cornerRadius = Themes.getDialogCornerRadius(getContext());
-        mBottomSheetCornerRadii = new float[]{
-                cornerRadius,
-                cornerRadius, // Top left radius in px
-                cornerRadius,
-                cornerRadius, // Top right radius in px
-                0,
-                0, // Bottom right
-                0,
-                0 // Bottom left
-        };
+        mBottomSheetCornerRadii = AllAppsSheetCorners.radii(cornerRadius, isFloatingSheet());
 
         int layerFg = getContext().getColor(R.color.blur_shade_panel_fg);
         int layerBg = getContext().getColor(R.color.blur_shade_panel_bg);

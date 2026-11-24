@@ -20,6 +20,7 @@ import android.util.AttributeSet;
 
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.R;
 import com.android.launcher3.allapps.ActivityAllAppsContainerView;
 import com.android.launcher3.taskbar.overlay.TaskbarOverlayContext;
 
@@ -48,6 +49,11 @@ public class TaskbarAllAppsContainerView extends
         super.invalidateHeader();
         Optional.ofNullable(mOnInvalidateHeaderListener).ifPresent(
                 OnInvalidateHeaderListener::onInvalidateHeader);
+    }
+
+    @Override
+    protected boolean isFloatingSheet() {
+        return getResources().getBoolean(R.bool.desktop_form_factor);
     }
 
     @Override

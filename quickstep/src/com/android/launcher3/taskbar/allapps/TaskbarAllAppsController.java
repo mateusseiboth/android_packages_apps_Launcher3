@@ -206,7 +206,9 @@ public final class TaskbarAllAppsController {
         mSlideInView = (TaskbarAllAppsSlideInView) mOverlayContext.getLayoutInflater().inflate(
                 R.layout.taskbar_all_apps_sheet, mOverlayContext.getDragLayer(), false);
 
-        if (!mOverlayContext.isPrimaryDisplay()
+        if (mControllers.taskbarActivityContext.isDesktopFormFactor()) {
+            applyDesktopSheetLayout();
+        } else if (!mOverlayContext.isPrimaryDisplay()
                 && enableCustomHeightForAllAppsOnCd.isTrue()) {
             // Not doing these calculations in init because the device properties may change, for
             // example if there's a display size setting change.
@@ -241,6 +243,7 @@ public final class TaskbarAllAppsController {
                 showKeyboard);
 
         viewController.show(animate);
+        setAllAppsButtonActivated(true);
         mAppsView = mOverlayContext.getAppsView();
         if (!LauncherModel.useModelRepositoryBinding()) {
             mAppsView.getAppsStore().setApps(mApps, mAppsModelFlags, mPackageUserKeytoUidMap);
@@ -254,6 +257,32 @@ public final class TaskbarAllAppsController {
         // doesn't also close
         mOverlayContext.getDragController().setDisallowGlobalDrag(mDisallowGlobalDrag);
         mOverlayContext.getDragController().setDisallowLongClick(mDisallowLongClick);
+    }
+
+    /**
+     * On the desktop form factor All Apps is a floating panel above the taskbar, two thirds of the
+     * screen tall at most, instead of a full height bottom sheet.
+     */
+    private void applyDesktopSheetLayout() {
+        DeviceProfile dp = mOverlayContext.getDeviceProfile();
+        Resources res = mOverlayContext.getResources();
+        Rect padding = dp.getAllAppsProfile().getPadding();
+        BaseDragLayer.LayoutParams lp =
+                (BaseDragLayer.LayoutParams) mSlideInView.getLayoutParams();
+        lp.height = DesktopAllAppsSheetGeometry.height(
+                dp.getDeviceProperties().getAvailableHeightPx(),
+                res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_max_height),
+                padding.top + padding.bottom);
+        lp.bottomMargin = DesktopAllAppsSheetGeometry.bottomMargin(
+                res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_bottom_margin),
+                /* insetBottomPx= */ 0,
+                mControllers.taskbarActivityContext.getDeviceProfile()
+                        .getTaskbarProfile().getHeight());
+        lp.gravity = Gravity.BOTTOM;
+    }
+
+    private void setAllAppsButtonActivated(boolean activated) {
+        mControllers.taskbarViewController.getAllAppsButtonView().setActivated(activated);
     }
 
     private void cleanUpOverlay() {
@@ -279,6 +308,9 @@ public final class TaskbarAllAppsController {
         mSlideInView = null;
         mAppsView = null;
         mTaskbarUiState.setTaskbarAllAppsOpen(false);
+        if (mControllers != null) {
+            setAllAppsButtonActivated(false);
+        }
     }
 
     @Nullable

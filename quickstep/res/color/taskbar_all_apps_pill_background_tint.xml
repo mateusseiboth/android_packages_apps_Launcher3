@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Primary while All Apps is open, a high surface otherwise. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true" android:color="@color/materialColorPrimary" />
+    <item android:color="@color/materialColorSurfaceContainerHighest" />
+</selector>

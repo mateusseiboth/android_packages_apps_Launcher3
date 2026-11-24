@@ -325,13 +325,14 @@
         launcher:numSearchContainerColumns="3"
         launcher:numFolderRows="3"
         launcher:numFolderColumns="3"
-        launcher:numHotseatIcons="6"
+        launcher:numHotseatIcons="10"
+        launcher:numExtendedHotseatIcons="24"
         launcher:numAllAppsColumns="6"
         launcher:isScalable="true"
         launcher:inlineNavButtonsEndSpacing="@dimen/taskbar_button_margin_6_5"
         launcher:devicePaddingId="@xml/paddings_6x5"
         launcher:dbFile="launcher_6_by_5.db"
-        launcher:defaultLayoutId="@xml/default_workspace_6x5"
+        launcher:defaultLayoutId="@xml/default_workspace_desktop"
         launcher:deviceCategory="desktop" >
 
         <display-option

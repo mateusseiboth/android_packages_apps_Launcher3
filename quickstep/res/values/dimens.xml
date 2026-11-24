@@ -425,6 +425,15 @@
     <dimen name="taskbar_home_button_left_margin_kids">48dp</dimen>
     <dimen name="taskbar_icon_size_kids">32dp</dimen>
     <dimen name="taskbar_all_apps_search_button_translation_x_offset">6dp</dimen>
+
+    <!-- Pill shaped All Apps button of the desktop taskbar. -->
+    <dimen name="taskbar_all_apps_pill_width">68dp</dimen>
+    <dimen name="taskbar_all_apps_pill_height">48dp</dimen>
+    <dimen name="taskbar_all_apps_pill_icon_size">24dp</dimen>
+
+    <!-- All Apps panel of the desktop taskbar: gap above the taskbar and maximum height. -->
+    <dimen name="taskbar_all_apps_sheet_bottom_margin">8dp</dimen>
+    <dimen name="taskbar_all_apps_sheet_max_height">1280dp</dimen>
     <dimen name="taskbar_all_apps_search_button_translation_x_offset_for_expressive_theme">0dp</dimen>
     <dimen name="taskbar_contextual_button_suw_margin">64dp</dimen>
     <dimen name="taskbar_contextual_button_suw_height">64dp</dimen>

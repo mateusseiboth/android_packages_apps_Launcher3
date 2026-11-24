@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 The LineageOS Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<!-- Desktop taskbar pinned apps, in Googlebook's order of roles: browser, email, calendar,
+     messages, media, photos, files, then system settings. The hotseat is the taskbar on the
+     desktop, so the workspace starts empty. -->
+<favorites xmlns:launcher="http://schemas.android.com/apk/res-auto/com.android.launcher3">
+
+    <!-- Browser -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="0"
+        launcher:x="0"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_BROWSER;end" />
+        <favorite launcher:uri="http://www.example.com/" />
+    </resolve>
+
+    <!-- Email -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="1"
+        launcher:x="1"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_EMAIL;end" />
+    </resolve>
+
+    <!-- Calendar -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="2"
+        launcher:x="2"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_CALENDAR;end" />
+    </resolve>
+
+    <!-- Messaging -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="3"
+        launcher:x="3"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MESSAGING;end" />
+    </resolve>
+
+    <!-- Music -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="4"
+        launcher:x="4"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MUSIC;end" />
+    </resolve>
+
+    <!-- Gallery -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="5"
+        launcher:x="5"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_GALLERY;end" />
+        <favorite launcher:uri="#Intent;type=images/*;end" />
+    </resolve>
+
+    <!-- Files -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="6"
+        launcher:x="6"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_FILES;end" />
+        <favorite launcher:uri="#Intent;action=android.intent.action.MAIN;component=com.android.documentsui/.LauncherActivity;end" />
+    </resolve>
+
+    <!-- Settings -->
+    <resolve
+        launcher:container="-101"
+        launcher:screen="7"
+        launcher:x="7"
+        launcher:y="0" >
+        <favorite launcher:uri="#Intent;action=android.settings.SETTINGS;end" />
+    </resolve>
+</favorites>

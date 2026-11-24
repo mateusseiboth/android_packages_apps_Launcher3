@@ -1675,6 +1675,9 @@ public class TaskbarView extends FrameLayout implements FolderIcon.FolderIconPar
         // view size.
         iconLayoutBoundsWidth -= mAllAppsButtonTranslationOffset;
 
+        // The desktop pill is wider than an app icon.
+        iconLayoutBoundsWidth += mAllAppsButtonContainer.getExtraWidth();
+
         return iconLayoutBoundsWidth;
     }
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background of the desktop taskbar's All Apps button: a 40dp tall pill, tinted. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetTop="4dp"
+    android:insetBottom="4dp">
+    <shape android:shape="rectangle">
+        <corners android:radius="20dp" />
+        <solid android:color="@android:color/white" />
+    </shape>
+</inset>
