@@ -23,4 +23,9 @@
          (SYSUI_STATE_DIALOG_STASH_TASKBAR) instead of for every SystemUI dialog
          (SYSUI_STATE_DIALOG_SHOWING). -->
     <bool name="config_taskbarStashesOnlyForDialogsThatAsk">false</bool>
+
+    <!-- Whether a click on the taskbar also closes the status bar quick action popups
+         (calendar, chip popups; SYSUI_STATE_QUICK_ACTIONS_SHOWING), not only the shade.
+         SystemUI must close them on collapsePanels (its config_collapsePanelsClosesQuickActions). -->
+    <bool name="config_taskbarClickClosesQuickActions">false</bool>
 </resources>
