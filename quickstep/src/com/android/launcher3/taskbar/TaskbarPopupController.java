@@ -542,7 +542,8 @@ public class TaskbarPopupController implements TaskbarControllers.LoggableTaskba
     }
 
     protected static boolean canPinAppWithContextMenu(TaskbarActivityContext context) {
-        return context.isTaskbarShowingDesktopTasks();
+        return TaskbarPinFromMenu.isOffered(
+                context.isTaskbarShowingDesktopTasks(), context.isDesktopFormFactor());
     }
 
     /**
