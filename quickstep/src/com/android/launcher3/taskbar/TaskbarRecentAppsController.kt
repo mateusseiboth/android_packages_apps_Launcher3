@@ -33,6 +33,7 @@ import com.android.launcher3.model.data.WorkspaceItemInfo
 import com.android.launcher3.taskbar.TaskbarControllers.LoggableTaskbarController
 import com.android.launcher3.taskbar.TaskbarPopupController.canPinAppWithContextMenu
 import com.android.launcher3.util.CancellableTask
+import com.android.launcher3.util.ComponentKey
 import com.android.launcher3.util.Executors.getTaskbarUiThread
 import com.android.launcher3.util.Preconditions
 import com.android.launcher3.util.SafeCloseable
@@ -105,6 +106,18 @@ class TaskbarRecentAppsController(
         private set
 
     private var allRecentTasks: List<GroupTask> = emptyList()
+
+    /**
+     * Components of the tasks in Recents, in its order, the oldest first. All Apps suggests the
+     * apps used last from them when there is no app prediction service.
+     */
+    val recentTaskComponentKeys: List<ComponentKey>
+        get() =
+            allRecentTasks
+                .flatMap { it.tasks }
+                .mapNotNull { task ->
+                    task.key.component?.let { ComponentKey(it, UserHandle.of(task.key.userId)) }
+                }
     private var taskbarRunningTasks: List<GroupTask> = emptyList()
     // Keeps track of the order in which running tasks appear.
     private var orderedRunningTaskIds = emptyList<Int>()

@@ -15,6 +15,7 @@
  */
 package com.android.launcher3.taskbar.allapps;
 
+import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_ALL_APPS_PREDICTION;
 import static com.android.launcher3.model.data.AppInfo.EMPTY_ARRAY;
 import static com.android.launcher3.taskbar.TaskbarDesktopExperienceFlags.enableCustomHeightForAllAppsOnCd;
 
@@ -31,10 +32,12 @@ import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.Flags;
 import com.android.launcher3.LauncherModel;
 import com.android.launcher3.R;
+import com.android.launcher3.allapps.AllAppsStore;
 import com.android.launcher3.appprediction.PredictionRowView;
 import com.android.launcher3.dragndrop.DragOptions.PreDragCondition;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
+import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.taskbar.TaskbarControllers;
 import com.android.launcher3.taskbar.TaskbarUiState;
 import com.android.launcher3.taskbar.overlay.TaskbarOverlayContext;
@@ -127,7 +130,7 @@ public final class TaskbarAllAppsController {
         if (mAppsView != null) {
             mAppsView.getFloatingHeaderView()
                     .findFixedRowByType(PredictionRowView.class)
-                    .setPredictedApps(mPredictedApps);
+                    .setPredictedApps(getSuggestedApps());
         }
         if (mSearchSessionController != null) {
             mSearchSessionController.setZeroStatePredictedItems(predictedApps);
@@ -250,7 +253,7 @@ public final class TaskbarAllAppsController {
         }
         mAppsView.getFloatingHeaderView()
                 .findFixedRowByType(PredictionRowView.class)
-                .setPredictedApps(mPredictedApps);
+                .setPredictedApps(getSuggestedApps());
         // 1 alternative that would be more work:
         // Create a shared drag layer between taskbar and taskbarAllApps so that when dragging
         // starts and taskbarAllApps can close, but the drag layer that the view is being dragged in
@@ -283,6 +286,36 @@ public final class TaskbarAllAppsController {
                 res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_max_width),
                 res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_screen_margin));
         lp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+    }
+
+    /**
+     * The row above the app list: the predictions, or, without an app prediction service, the
+     * apps used last.
+     */
+    private List<ItemInfo> getSuggestedApps() {
+        if (mAppsView == null || mOverlayContext == null) {
+            return mPredictedApps;
+        }
+        return TaskbarAllAppsSuggestions.choose(mPredictedApps, getRecentApps());
+    }
+
+    private List<ItemInfo> getRecentApps() {
+        AllAppsStore store = mAppsView.getAppsStore();
+        return TaskbarAllAppsSuggestions.recentApps(
+                mControllers.taskbarRecentAppsController.getRecentTaskComponentKeys(),
+                key -> toSuggestion(store.getApp(key)),
+                mOverlayContext.getDeviceProfile().getAllAppsProfile()
+                        .getNumShownAllAppsColumns());
+    }
+
+    @Nullable
+    private ItemInfo toSuggestion(@Nullable AppInfo app) {
+        if (app == null) {
+            return null;
+        }
+        WorkspaceItemInfo item = app.makeWorkspaceItem(mOverlayContext);
+        item.container = CONTAINER_ALL_APPS_PREDICTION;
+        return item;
     }
 
     private void setAllAppsButtonActivated(boolean activated) {
