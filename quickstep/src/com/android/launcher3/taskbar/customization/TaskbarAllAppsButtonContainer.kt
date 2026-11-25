@@ -104,6 +104,8 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
         background = resources.getDrawable(R.drawable.taskbar_all_apps_pill_background, null)
         backgroundTintList =
             context.getColorStateList(R.color.taskbar_all_apps_pill_background_tint)
+        // The style draws the icon at an app icon's size; the pill's glyph is smaller.
+        setIconSize(pill.iconSizePx)
         setIconDrawable(resources.getDrawable(R.drawable.ic_taskbar_all_apps_pill, null))
         setPadding(
             pill.horizontalPaddingPx,

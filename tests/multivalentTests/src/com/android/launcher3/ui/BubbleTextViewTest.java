@@ -687,4 +687,17 @@ public class BubbleTextViewTest {
         assertThat(mBubbleTextView.getIcon().getDelegate())
                 .isInstanceOf(PreloadIconDelegate.class);
     }
+
+    @Test
+    public void setIconSize_resizesTheIconShown() {
+        mGmailAppInfo.bitmap = BitmapInfo.fromBitmap(Bitmap.createBitmap(1, 1, Config.ARGB_8888));
+        TestUtil.runOnExecutorSync(MAIN_EXECUTOR, () -> {
+            mBubbleTextView.applyIconAndLabel(mGmailAppInfo);
+            mBubbleTextView.setIconSize(24);
+        });
+
+        assertThat(mBubbleTextView.getIconSize()).isEqualTo(24);
+        assertThat(mBubbleTextView.getIcon().getBounds().width()).isEqualTo(24);
+        assertThat(mBubbleTextView.getIcon().getBounds().height()).isEqualTo(24);
+    }
 }
