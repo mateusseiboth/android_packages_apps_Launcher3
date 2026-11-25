@@ -79,6 +79,7 @@ import com.android.launcher3.logging.InstanceIdSequence;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.IModelWriter;
 import com.android.launcher3.model.StringCache;
+import com.android.launcher3.model.LinuxAppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.model.repository.StringCacheRepository;
@@ -448,9 +449,11 @@ public interface ActivityContext extends SavedStateRegistryOwner {
             return null;
         }
 
-        boolean isShortcut = (item instanceof WorkspaceItemInfo)
+        // A Linux app (PcWayland) is an app entry that starts through its shortcut.
+        String linuxShortcutId = item instanceof LinuxAppInfo linux ? linux.getShortcutId() : null;
+        boolean isShortcut = linuxShortcutId != null || ((item instanceof WorkspaceItemInfo)
                 && item.itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT
-                && !((WorkspaceItemInfo) item).isPromise();
+                && !((WorkspaceItemInfo) item).isPromise());
         if (isShortcut && !WIDGETS_ENABLED) {
             return null;
         }
@@ -466,7 +469,8 @@ public interface ActivityContext extends SavedStateRegistryOwner {
         }
         try {
             if (isShortcut && intent.getPackage() != null) {
-                String id = ((WorkspaceItemInfo) item).getDeepShortcutId();
+                String id = linuxShortcutId != null
+                        ? linuxShortcutId : ((WorkspaceItemInfo) item).getDeepShortcutId();
                 String packageName = intent.getPackage();
                 ((Context) this).getSystemService(LauncherApps.class).startShortcut(
                         packageName, id, intent.getSourceBounds(), optsBundle, user);

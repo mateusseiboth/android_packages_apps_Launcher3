@@ -690,6 +690,7 @@ public class LoaderTask implements Runnable {
                 mBgAllAppsList.add(appInfo, app, false);
             }
             allActivityList.addAll(apps);
+            LinuxApps.reload(mContext, mIconCache, mBgAllAppsList, user);
         }
 
         Trace.beginSection("LoadAllAppsIconsInBulk");

@@ -47,10 +47,12 @@ class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>
     override fun onPackageAdded(packageName: String, user: UserHandle) {
         FileLog.d(TAG, "onPackageAdded triggered for packageName=$packageName, user=$user")
         taskExecutor.accept(PackageUpdatedTask(OP_ADD, user, packageName))
+        reloadLinuxApps(user, packageName)
     }
 
     override fun onPackageChanged(packageName: String, user: UserHandle) {
         taskExecutor.accept(PackageUpdatedTask(OP_UPDATE, user, packageName))
+        reloadLinuxApps(user, packageName)
     }
 
     override fun onPackageLoadingProgressChanged(
@@ -72,6 +74,7 @@ class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>
         replacing: Boolean,
     ) {
         taskExecutor.accept(PackageUpdatedTask(OP_UPDATE, user, *packageNames))
+        reloadLinuxApps(user, *packageNames)
     }
 
     override fun onPackagesSuspended(vararg packageNames: String, user: UserHandle) {
@@ -98,6 +101,12 @@ class ModelLauncherCallbacks(private var taskExecutor: Consumer<ModelUpdateTask>
         user: UserHandle,
     ) {
         taskExecutor.accept(ShortcutsChangedTask(packageName, shortcuts, user, true))
+        reloadLinuxApps(user, packageName)
+    }
+
+    /** PcWayland's Linux apps follow its shortcuts; a package update drops them from the app list. */
+    private fun reloadLinuxApps(user: UserHandle, vararg packageNames: String) {
+        if (LinuxApps.PACKAGE in packageNames) taskExecutor.accept(LinuxAppsChangedTask(user))
     }
 
     fun onPackagesRemoved(user: UserHandle, packages: List<String>) {

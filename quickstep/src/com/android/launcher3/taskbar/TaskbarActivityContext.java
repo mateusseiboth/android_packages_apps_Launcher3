@@ -131,6 +131,8 @@ import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.logger.LauncherAtom;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.IModelWriter;
+import com.android.launcher3.model.LinuxAppInfo;
+import com.android.launcher3.model.LinuxApps;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.AppPairInfo;
 import com.android.launcher3.model.data.FolderInfo;
@@ -1987,7 +1989,11 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
         } else if (tag instanceof AppInfo) {
             // Tapping an item in AllApps
             AppInfo info = (AppInfo) tag;
-            if (recents != null && recents.isSplitSelectionActive()) {
+            if (info instanceof LinuxAppInfo linux) {
+                // A Linux app (PcWayland) starts through its shortcut: every Linux window shares
+                // PcWayland's package, so the recent task of the package is not this app.
+                LinuxApps.start(this, linux, getSingleActivityLaunchOptions(info).toBundle());
+            } else if (recents != null && recents.isSplitSelectionActive()) {
                 // If we are selecting a second app for split, launch the split tasks
                 taskbarUIController.triggerSecondAppForSplit(info, info.intent, view,
                         EMPTY_FILTER);

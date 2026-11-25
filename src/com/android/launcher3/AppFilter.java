@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 
 import com.android.launcher3.dagger.ApplicationContext;
+import com.android.launcher3.model.LinuxApps;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -27,6 +28,7 @@ public class AppFilter {
     }
 
     public boolean shouldShowApp(ComponentName app) {
-        return !mFilteredComponents.contains(app);
+        // PcWayland's activities only hold the Linux apps' shortcuts, listed as apps of their own.
+        return !mFilteredComponents.contains(app) && !LinuxApps.isHolder(app);
     }
 }
