@@ -434,6 +434,16 @@
     <!-- All Apps panel of the desktop taskbar: gap above the taskbar and maximum height. -->
     <dimen name="taskbar_all_apps_sheet_bottom_margin">8dp</dimen>
     <dimen name="taskbar_all_apps_sheet_max_height">1280dp</dimen>
+    <!-- Desktop form factor: the All Apps panel is at most this wide, and keeps this margin from
+         the screen edges on narrow screens. -->
+    <dimen name="taskbar_all_apps_sheet_max_width">720dp</dimen>
+    <dimen name="taskbar_all_apps_sheet_screen_margin">48dp</dimen>
+    <!-- Desktop form factor: space between the panel's edges and its search field and apps. -->
+    <dimen name="taskbar_all_apps_sheet_inner_padding">16dp</dimen>
+    <!-- Desktop form factor: the panel fades in while it slides up this far. -->
+    <dimen name="taskbar_all_apps_sheet_slide_distance">32dp</dimen>
+    <!-- Desktop form factor: elevation of the panel's shadow over the windows under it. -->
+    <dimen name="taskbar_all_apps_sheet_elevation">8dp</dimen>
     <dimen name="taskbar_all_apps_search_button_translation_x_offset_for_expressive_theme">0dp</dimen>
     <dimen name="taskbar_contextual_button_suw_margin">64dp</dimen>
     <dimen name="taskbar_contextual_button_suw_height">64dp</dimen>

@@ -24,6 +24,7 @@ import static com.android.launcher3.util.Executors.getTaskbarUiThread;
 import android.animation.Animator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Outline;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,6 +34,7 @@ import android.util.Log;
 import android.view.CrossWindowBlurListeners;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.view.ViewRootImpl;
 import android.view.animation.Interpolator;
 import android.window.OnBackInvokedDispatcher;
@@ -62,6 +64,18 @@ public class TaskbarAllAppsSlideInView extends AbstractSlideInView<TaskbarOverla
     private final Consumer<Boolean> mWindowBlurListener = blursEnabled -> invalidate();
 
     private TaskbarAllAppsContainerView mAppsView;
+
+    /** Outline of the floating panel, for its shadow: the visible part of the apps view. */
+    private final ViewOutlineProvider mFloatingPanelOutline = new ViewOutlineProvider() {
+        @Override
+        public void getOutline(View view, Outline outline) {
+            View panel = mAppsView.getVisibleContainerView();
+            int left = mAppsView.getLeft() + panel.getLeft();
+            int top = mAppsView.getTop() + panel.getTop() + (int) mAppsView.getTranslationY();
+            outline.setRoundRect(left, top, left + panel.getWidth(), top + panel.getHeight(),
+                    Themes.getDialogCornerRadius(getContext()));
+        }
+    };
     private float mShiftRange;
     private int mBlurRadius;
     private @Nullable Runnable mShowOnFullyAttachedToWindowRunnable;
@@ -202,6 +216,12 @@ public class TaskbarAllAppsSlideInView extends AbstractSlideInView<TaskbarOverla
 
         DeviceProfile dp = mActivityContext.getDeviceProfile();
         setShiftRange(dp.getAllAppsProfile().getShiftRange());
+
+        if (isFloatingPanel()) {
+            setOutlineProvider(mFloatingPanelOutline);
+            setElevation(getResources().getDimensionPixelSize(
+                    R.dimen.taskbar_all_apps_sheet_elevation));
+        }
     }
 
     @Override
@@ -250,6 +270,22 @@ public class TaskbarAllAppsSlideInView extends AbstractSlideInView<TaskbarOverla
         super.setTranslationShift(shift);
         mBlurRadius = (int) (mMaxBlurRadius * (1 - shift));
         setScrimAlpha(1 - shift);
+        if (isFloatingPanel()) {
+            // The floating panel fades in while it slides up a short distance.
+            setAlpha(1 - shift);
+            invalidateOutline();
+        }
+    }
+
+    /** Whether All Apps is the desktop's floating panel above the taskbar. */
+    private boolean isFloatingPanel() {
+        return getResources().getBoolean(R.bool.desktop_form_factor);
+    }
+
+    @Override
+    protected int getBottomOffsetPx() {
+        return DesktopAllAppsSheetGeometry.backgroundBottomOffset(
+                isFloatingPanel(), super.getBottomOffsetPx());
     }
 
     public void setAnimationPlayFraction(float progress) {
@@ -264,6 +300,10 @@ public class TaskbarAllAppsSlideInView extends AbstractSlideInView<TaskbarOverla
 
     @Override
     protected int getScrimColor(Context context) {
+        // The desktop stays visible around the floating panel: no scrim (-1).
+        if (context.getResources().getBoolean(R.bool.desktop_form_factor)) {
+            return -1;
+        }
         return Themes.getAttrColor(context, R.attr.allAppsScrimColor);
     }
 
@@ -295,6 +335,10 @@ public class TaskbarAllAppsSlideInView extends AbstractSlideInView<TaskbarOverla
 
     @Override
     protected float getShiftRange() {
+        if (isFloatingPanel()) {
+            return getResources().getDimensionPixelSize(
+                    R.dimen.taskbar_all_apps_sheet_slide_distance);
+        }
         return mShiftRange;
     }
 

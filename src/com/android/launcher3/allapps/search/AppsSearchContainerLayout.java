@@ -100,6 +100,11 @@ public class AppsSearchContainerLayout extends ExtendedEditText
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (mAppsView.isSearchBarFillingWidth()) {
+            // A floating All Apps panel gives the search field its own margins.
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            return;
+        }
         // Update the width to match the grid padding
         DeviceProfile dp = mLauncher.getDeviceProfile();
         int myRequestedWidth = getSize(widthMeasureSpec);

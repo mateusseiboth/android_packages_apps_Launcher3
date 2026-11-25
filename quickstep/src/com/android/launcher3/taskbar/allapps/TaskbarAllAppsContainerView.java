@@ -16,6 +16,7 @@
 package com.android.launcher3.taskbar.allapps;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 
 import androidx.annotation.Nullable;
@@ -54,6 +55,35 @@ public class TaskbarAllAppsContainerView extends
     @Override
     protected boolean isFloatingSheet() {
         return getResources().getBoolean(R.bool.desktop_form_factor);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        if (!isFloatingSheet()) {
+            return;
+        }
+        // A floating panel opens from the taskbar button and the keyboard; it has no handle.
+        findViewById(R.id.bottom_sheet_handle).setVisibility(GONE);
+        findViewById(R.id.bottom_sheet_handle_area).setVisibility(GONE);
+    }
+
+    @Override
+    public void setInsets(Rect insets) {
+        super.setInsets(insets);
+        if (!isFloatingSheet()) {
+            return;
+        }
+        // The floating panel is exactly as wide as this view (TaskbarAllAppsController sizes it),
+        // so the panel needs no side margins; the search field keeps the inner padding.
+        setPadding(0, getPaddingTop(), 0, getPaddingBottom());
+        int innerPadding =
+                getResources().getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_inner_padding);
+        MarginLayoutParams searchLp = (MarginLayoutParams) getSearchView().getLayoutParams();
+        searchLp.topMargin = innerPadding;
+        searchLp.setMarginStart(innerPadding);
+        searchLp.setMarginEnd(innerPadding);
+        getSearchView().setLayoutParams(searchLp);
     }
 
     @Override

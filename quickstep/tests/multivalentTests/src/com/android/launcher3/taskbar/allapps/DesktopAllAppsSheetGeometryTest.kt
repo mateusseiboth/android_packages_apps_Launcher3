@@ -59,4 +59,40 @@ class DesktopAllAppsSheetGeometryTest {
             )
             .isEqualTo(88)
     }
+
+    @Test
+    fun width_wideScreen_isCappedAtTheMaximum() {
+        assertThat(
+                DesktopAllAppsSheetGeometry.width(
+                    availableWidthPx = 2560,
+                    maxWidthPx = 720,
+                    screenMarginPx = 48,
+                )
+            )
+            .isEqualTo(720)
+    }
+
+    @Test
+    fun width_narrowScreen_keepsTheScreenMargins() {
+        assertThat(
+                DesktopAllAppsSheetGeometry.width(
+                    availableWidthPx = 700,
+                    maxWidthPx = 720,
+                    screenMarginPx = 48,
+                )
+            )
+            .isEqualTo(604)
+    }
+
+    @Test
+    fun backgroundBottomOffset_floatingPanel_drawsNothingBelowThePanel() {
+        assertThat(DesktopAllAppsSheetGeometry.backgroundBottomOffset(isFloating = true, 120))
+            .isEqualTo(0)
+    }
+
+    @Test
+    fun backgroundBottomOffset_bottomSheet_keepsTheSheetOffset() {
+        assertThat(DesktopAllAppsSheetGeometry.backgroundBottomOffset(isFloating = false, 120))
+            .isEqualTo(120)
+    }
 }

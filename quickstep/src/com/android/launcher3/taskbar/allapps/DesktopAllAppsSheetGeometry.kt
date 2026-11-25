@@ -33,4 +33,18 @@ object DesktopAllAppsSheetGeometry {
     @JvmStatic
     fun bottomMargin(sheetMarginPx: Int, insetBottomPx: Int, taskbarHeightPx: Int): Int =
         sheetMarginPx + max(insetBottomPx, taskbarHeightPx)
+
+    /** Width of the panel: [maxWidthPx], or the screen less [screenMarginPx] on each side. */
+    @JvmStatic
+    fun width(availableWidthPx: Int, maxWidthPx: Int, screenMarginPx: Int): Int =
+        min(maxWidthPx, availableWidthPx - 2 * screenMarginPx)
+
+    /**
+     * How far the background is drawn below the panel. A bottom sheet extends it by
+     * [sheetOffsetPx] to fill the gap left while predictive back scales it down; a floating panel
+     * keeps its bottom corners above the taskbar.
+     */
+    @JvmStatic
+    fun backgroundBottomOffset(isFloating: Boolean, sheetOffsetPx: Int): Int =
+        sheetOffsetPx.takeUnless { isFloating } ?: 0
 }

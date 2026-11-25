@@ -278,7 +278,11 @@ public final class TaskbarAllAppsController {
                 /* insetBottomPx= */ 0,
                 mControllers.taskbarActivityContext.getDeviceProfile()
                         .getTaskbarProfile().getHeight());
-        lp.gravity = Gravity.BOTTOM;
+        lp.width = DesktopAllAppsSheetGeometry.width(
+                dp.getDeviceProperties().getAvailableWidthPx(),
+                res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_max_width),
+                res.getDimensionPixelSize(R.dimen.taskbar_all_apps_sheet_screen_margin));
+        lp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
     }
 
     private void setAllAppsButtonActivated(boolean activated) {

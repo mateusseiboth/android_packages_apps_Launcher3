@@ -300,6 +300,14 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
         return false;
     }
 
+    /**
+     * Whether the search field takes the width the panel gives it, instead of lining up with the
+     * icons of the grid: in a floating panel.
+     */
+    public boolean isSearchBarFillingWidth() {
+        return isFloatingSheet();
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
