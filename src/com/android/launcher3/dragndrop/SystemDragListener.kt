@@ -114,7 +114,11 @@ constructor(
                 try {
                     (params?.dragInfo as? SystemDragItemInfo)?.apply {
                         payload =
-                            SystemDragItemInfo.UriListPayload(
+                            if (SystemDropRules.isLauncherItem(clipDescription))
+                                SystemDragItemInfo.ItemPayload(
+                                    SystemDropRules.readLauncherItem(clipData)
+                                )
+                            else SystemDragItemInfo.UriListPayload(
                                 permissions = mContext.requestDragAndDropPermissions(event),
                                 uriList =
                                     clipData?.let { clipData ->

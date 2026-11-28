@@ -75,6 +75,19 @@ interface HomeScreenFilesProvider {
     ): List<CompletableFuture<Boolean>>
 
     /**
+     * Attempts to asynchronously copy all URIs in the specified list to the home screen folder; a
+     * name that is taken there gets a number ("name (1)").
+     *
+     * @param uriList The list of URIs to copy.
+     * @param extras The extras to be applied when adding items to the launcher model.
+     * @return List of futures indicating the success or failure of each copy, in the list's order.
+     */
+    fun copyToHomeScreen(
+        uriList: List<Uri>,
+        extras: HomeScreenFilesUpdate.Extras,
+    ): List<CompletableFuture<Boolean>>
+
+    /**
      * Permanently deletes a single file/folder in the [HOME_SCREEN_FOLDER_RELATIVE_PATH] directory.
      *
      * @param uri The URI of the item to be deleted.
@@ -111,9 +124,10 @@ interface HomeScreenFilesProvider {
     fun rename(uri: Uri, name: String): CompletableFuture<Boolean>
 
     companion object {
+        /** The running user's Desktop folder on the shared storage, as on PC systems. */
         @JvmField
         @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-        val HOME_SCREEN_FOLDER_RELATIVE_PATH = "Home screen/"
+        val HOME_SCREEN_FOLDER_RELATIVE_PATH = "Desktop/"
 
         @JvmField
         val INSTANCE = DaggerSingletonObject(LauncherAppComponent::getHomeScreenFilesProvider)

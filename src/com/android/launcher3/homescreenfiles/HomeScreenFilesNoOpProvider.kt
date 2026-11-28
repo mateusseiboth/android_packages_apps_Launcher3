@@ -41,6 +41,11 @@ class HomeScreenFilesNoOpProvider : HomeScreenFilesProvider {
         relativeFolderPath: String?,
     ): List<CompletableFuture<Boolean>> = uriList.map { CompletableFuture.completedFuture(false) }
 
+    override fun copyToHomeScreen(
+        uriList: List<Uri>,
+        extras: HomeScreenFilesUpdate.Extras,
+    ): List<CompletableFuture<Boolean>> = uriList.map { CompletableFuture.completedFuture(false) }
+
     override fun deletePermanently(uri: Uri) {}
 
     override fun moveToTrash(name: String): CompletableFuture<String?> =

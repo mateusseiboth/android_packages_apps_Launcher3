@@ -16,7 +16,6 @@
 
 package com.android.launcher3.dragndrop
 
-import android.content.ClipDescription
 import android.graphics.Canvas
 import android.graphics.Point
 import android.graphics.Rect
@@ -69,35 +68,12 @@ constructor(
         }
     }
 
-    private fun acceptDrag(event: DragEvent): Boolean {
-        // NOTE: We currently only support files dragged from other apps. If the home
-        // screen files feature is disabled, we won't be able to handle the drag payload
-        // so we can safely ignore the event.
-        if (!isHomeScreenFilesFeatureEnabled) {
-            return false
-        }
-        // NOTE: This is an imperfect proxy to restrict drags from other apps to only those
-        // originating from DocsUI. This does NOT establish trust and nothing breaks if this proxy
-        // fails or is spoofed by another app; it exists solely to polish the user experience if we
-        // know we likely can't handle the drag payload on drop.
-        // TODO(b/468079600): Remove this check once file copy operations are supported.
-        if (
-            event.clipDescription?.extras?.keySet()?.any { it.startsWith(DOCS_UI_EXTRA_PREFIX) } !=
-                true
-        ) {
-            return false
-        }
-        // NOTE: Drops for these mime types are not currently supported so ignore related drag
-        // events to avoid giving the user the impression that they are.
-        return !(event.clipDescription?.hasMimeType(
-            arrayOf(
-                ClipDescription.MIMETYPE_APPLICATION_ACTIVITY,
-                ClipDescription.MIMETYPE_APPLICATION_SHORTCUT,
-                ClipDescription.MIMETYPE_APPLICATION_TASK,
-                ClipDescription.MIMETYPE_TEXT_INTENT,
-            )
-        ) ?: false)
-    }
+    /**
+     * Takes apps from the taskbar's app list, and files when the home screen files feature is on
+     * (moved or copied into the desktop folder, see [SystemDropRules]).
+     */
+    private fun acceptDrag(event: DragEvent): Boolean =
+        SystemDropRules.isAcceptable(event.clipDescription, isHomeScreenFilesFeatureEnabled)
 
     private fun continueDrag(event: DragEvent): Boolean? = systemDragListener?.onDrag(event)
 

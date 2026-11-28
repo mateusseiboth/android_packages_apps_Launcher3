@@ -53,6 +53,8 @@ import java.util.concurrent.CompletableFuture.runAsync
 import java.util.concurrent.CompletableFuture.supplyAsync
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
+import java.time.LocalDateTime
 
 /** MediaStore-based implementation of [HomeScreenFilesProvider]. */
 class HomeScreenFilesMediaStoreProvider
@@ -79,6 +81,14 @@ constructor(
     // (2) Reconcile media store URIs with URI aliases from other content provider authorities.
     private val inProgressMoveToHomeScreenUriAliases = ConcurrentHashMap<Uri, Uri>()
 
+    // Copies into the desktop folder by the path they will have: the media store indexes a copied
+    // file as soon as it is created, before its URI is known here.
+    private val inProgressCopies = ConcurrentHashMap<String, InProgressCopy>()
+
+    private val sources = DesktopFileSources(context, environmentWrapper::getExternalStorageDirectory)
+
+    private val trash = DesktopTrash(environmentWrapper::getExternalStorageDirectory, LocalDateTime::now)
+
     init {
         if (environmentWrapper.isExternalStorageDirectoryMounted()) {
             externalStorageDirectoryMountedFuture.complete(null)
@@ -102,7 +112,8 @@ constructor(
                         return
                     }
 
-                    val uriAlias = inProgressMoveToHomeScreenUriAliases.remove(uri)
+                    val copy = findInProgressCopy(uri)
+                    val uriAlias = inProgressMoveToHomeScreenUriAliases.remove(uri) ?: copy?.uriAlias
 
                     updates.dispatchValue(
                         HomeScreenFilesUpdate(
@@ -115,6 +126,7 @@ constructor(
                             Process.myUserHandle(),
                             inProgressChangeExtras.remove(uri)
                                 ?: uriAlias?.run(inProgressChangeExtras::remove)
+                                ?: copy?.extras
                                 ?: HomeScreenFilesUpdate.Extras.builder().build(),
                         )
                     )
@@ -202,9 +214,11 @@ constructor(
     override fun canMoveToHomeScreen(uriList: List<Uri>?): Boolean =
         uriList?.run { isNotEmpty() && all { uri -> canMoveToHomeScreen(uri) } } == true
 
-    /** NOTE: Currently only URIs which can be resolved by the media store are supported. */
-    private fun canMoveToHomeScreen(uri: Uri): Boolean =
-        isExternalStorageProviderUri(uri) || isExternalPrimaryMediaStoreUri(uri)
+    /**
+     * Items of the shared storage move through the media store; other content (other volumes, other
+     * apps) is copied in, see [DesktopFileSources].
+     */
+    private fun canMoveToHomeScreen(uri: Uri): Boolean = uri.scheme == ContentResolver.SCHEME_CONTENT
 
     override fun moveToHomeScreen(
         uriList: List<Uri>,
@@ -220,9 +234,122 @@ constructor(
         uri: Uri,
         extras: HomeScreenFilesUpdate.Extras,
         relativeFolderPath: String?,
+    ): Boolean =
+        when (val source = sources.resolve(uri)) {
+            is DesktopFileSource.Media ->
+                moveMediaToHomeScreen(source.mediaUri, uri, extras, relativeFolderPath)
+            is DesktopFileSource.LocalFile ->
+                copyFileToHomeScreen(source.file, uri, extras, relativeFolderPath)
+            is DesktopFileSource.Content ->
+                copyContentToHomeScreen(source, uri, extras, relativeFolderPath)
+            null -> false
+        }
+
+    override fun copyToHomeScreen(
+        uriList: List<Uri>,
+        extras: HomeScreenFilesUpdate.Extras,
+    ): List<CompletableFuture<Boolean>> =
+        uriList.map { uri -> supplyAsync({ copyToHomeScreen(uri, extras) }, executorService) }
+
+    @WorkerThread
+    private fun copyToHomeScreen(uri: Uri, extras: HomeScreenFilesUpdate.Extras): Boolean =
+        when (val source = sources.resolve(uri)) {
+            is DesktopFileSource.Media ->
+                readFile(source.mediaUri)?.let { copyFileToHomeScreen(it, null, extras, null) }
+                    ?: false
+            is DesktopFileSource.LocalFile -> copyFileToHomeScreen(source.file, null, extras, null)
+            is DesktopFileSource.Content -> copyContentToHomeScreen(source, null, extras, null)
+            null -> false
+        }
+
+    @WorkerThread
+    private fun copyFileToHomeScreen(
+        file: File,
+        uriAlias: Uri?,
+        extras: HomeScreenFilesUpdate.Extras,
+        relativeFolderPath: String?,
+    ): Boolean = copyToHomeScreen(file.name, uriAlias, extras, relativeFolderPath) { target ->
+        DesktopFileSources.copyTree(file, target)
+    }
+
+    @WorkerThread
+    private fun copyContentToHomeScreen(
+        source: DesktopFileSource.Content,
+        uriAlias: Uri?,
+        extras: HomeScreenFilesUpdate.Extras,
+        relativeFolderPath: String?,
+    ): Boolean = copyToHomeScreen(source.name, uriAlias, extras, relativeFolderPath) { target ->
+        context.contentResolver.openInputStream(source.uri)?.use { input ->
+            target.outputStream().use { input.copyTo(it) }
+            true
+        } ?: false
+    }
+
+    /**
+     * Copies into the desktop folder under a free name ("name (1)" when taken). The media store then
+     * reports the new item, which takes [extras] and replaces the item made for [uriAlias] at drop.
+     */
+    @WorkerThread
+    private fun copyToHomeScreen(
+        name: String,
+        uriAlias: Uri?,
+        extras: HomeScreenFilesUpdate.Extras,
+        relativeFolderPath: String?,
+        copy: (File) -> Boolean,
     ): Boolean {
-        val mediaUri = getExternalPrimaryMediaStoreUri(context, uri)
-        if (mediaUri == null) {
+        val folder = homeScreenFolder().resolve(relativeFolderPath ?: "")
+        if (!folder.isDirectory && !folder.mkdirs()) {
+            Log.e(TAG, "Unable to create '$HOME_SCREEN_FOLDER_RELATIVE_PATH'")
+            return false
+        }
+        val target = File(folder, DesktopFileSources.buildFreeName(name) { File(folder, it).exists() })
+        inProgressCopies[target.absolutePath] = InProgressCopy(extras, uriAlias)
+        val isCopied = runCatching { copy(target) }.getOrElse { e ->
+            Log.e(TAG, "Unable to copy to '$HOME_SCREEN_FOLDER_RELATIVE_PATH'", e)
+            false
+        }
+        if (!isCopied) {
+            inProgressCopies.remove(target.absolutePath)
+            target.deleteRecursively()
+            return false
+        }
+        // A folder is indexed once scanned; a file was indexed when it was created.
+        runCatching { MediaStore.scanFile(context.contentResolver, target) }
+        CompletableFuture.delayedExecutor(COPY_REPORT_TIMEOUT_SECONDS, TimeUnit.SECONDS, executorService)
+            .execute { inProgressCopies.remove(target.absolutePath) }
+        return true
+    }
+
+    /** The copy a media store change is about, looked up only while copies are running. */
+    private fun findInProgressCopy(uri: Uri): InProgressCopy? {
+        if (inProgressCopies.isEmpty()) return null
+        return readFile(uri)?.let { inProgressCopies.remove(it.absolutePath) }
+    }
+
+    private fun readFile(mediaUri: Uri): File? =
+        runCatching {
+                context.contentResolver.query(mediaUri, arrayOf(DATA), null, null, null)?.use {
+                    if (it.moveToFirst()) it.getStringOrNull(0)?.let(fileFactory) else null
+                }
+            }
+            .getOrNull()
+
+    private fun homeScreenFolder(): File =
+        environmentWrapper.getExternalStorageDirectory().resolve(HOME_SCREEN_FOLDER_RELATIVE_PATH)
+
+    private data class InProgressCopy(
+        val extras: HomeScreenFilesUpdate.Extras,
+        val uriAlias: Uri?,
+    )
+
+    @WorkerThread
+    private fun moveMediaToHomeScreen(
+        mediaUri: Uri,
+        uri: Uri,
+        extras: HomeScreenFilesUpdate.Extras,
+        relativeFolderPath: String?,
+    ): Boolean {
+        if (!isExternalPrimaryMediaStoreUri(mediaUri)) {
             Log.e(
                 TAG,
                 "Unable to move to '$HOME_SCREEN_FOLDER_RELATIVE_PATH' due to unsupported URI",
@@ -307,15 +434,7 @@ constructor(
 
     override fun moveToTrash(name: String): CompletableFuture<String?> {
         return supplyAsync(
-                {
-                    val path =
-                        environmentWrapper
-                            .getExternalStorageDirectory()
-                            .resolve(HOME_SCREEN_FOLDER_RELATIVE_PATH)
-                            .resolve(name)
-                            .absolutePath
-                    MediaStore.trashFile(context.contentResolver, path)
-                },
+                { trash.trash(homeScreenFolder().resolve(name)) },
                 executorService,
             )
             .exceptionally {
@@ -327,7 +446,7 @@ constructor(
     override fun restoreFromTrash(trashPath: String): CompletableFuture<Boolean> {
         return supplyAsync(
                 {
-                    MediaStore.restoreFileFromTrash(context.contentResolver, trashPath, null)
+                    trash.restore(trashPath)
                     true
                 },
                 executorService,
@@ -492,6 +611,7 @@ constructor(
         private val QUERY_DEFAULT_SELECTION_ARGS =
             arrayOf(HOME_SCREEN_FOLDER_RELATIVE_PATH, MEDIA_STORE_VALUE_FALSE)
         private const val TAG = "HomeScreenFilesMediaStoreProvider"
+        private const val COPY_REPORT_TIMEOUT_SECONDS = 5L
 
         private fun getExternalPrimaryMediaStoreUri(context: Context, uri: Uri): Uri? {
             if (isExternalPrimaryMediaStoreUri(uri)) {

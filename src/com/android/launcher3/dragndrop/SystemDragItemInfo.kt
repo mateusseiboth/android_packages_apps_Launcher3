@@ -91,6 +91,15 @@ class SystemDragItemInfo : WorkspaceItemInfo() {
         override fun isAcceptable(): Boolean = permissions != null && uriList?.isNotEmpty() == true
     }
 
+    /**
+     * Represents an app dragged from another window of the launcher (the taskbar's app list).
+     *
+     * @param item The app's item, from the same process.
+     */
+    data class ItemPayload(val item: ItemInfo?) : Payload() {
+        override fun isAcceptable(): Boolean = item != null
+    }
+
     /** Similar to [java.util.concurrent.atomic.AtomicReference] but w/o concurrency guarantees. */
     private data class Reference<T>(var value: T)
 }

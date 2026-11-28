@@ -2029,11 +2029,12 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
                 if (!payload.isAcceptable()) {
                     return false;
                 }
-                // NOTE: Workspace currently only supports dropping URIs.
-                if (!(payload instanceof SystemDragItemInfo.UriListPayload uriListPayload)
+                // NOTE: Workspace supports dropping URIs and apps from the taskbar's app list.
+                if (!(payload instanceof SystemDragItemInfo.ItemPayload)
+                        && (!(payload instanceof SystemDragItemInfo.UriListPayload uriListPayload)
                         || !HomeScreenFilesProvider.INSTANCE
                                 .get(mLauncher)
-                                .canMoveToHomeScreen(uriListPayload.getUriList())) {
+                                .canMoveToHomeScreen(uriListPayload.getUriList()))) {
                     return false;
                 }
             }
@@ -3137,6 +3138,13 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
                     requireNonNull(payload.getUriList()).get(0));
 
             d.dragInfo = info;
+        } else if (d.dragInfo instanceof SystemDragItemInfo dragInfo
+                && dragInfo.getPayload() instanceof SystemDragItemInfo.ItemPayload payload) {
+            // An app dragged from the taskbar's app list lands like one from All Apps.
+            // Apps (WorkspaceItemFactory) get a new item when inflated; shortcuts are copied so
+            // that the taskbar keeps its own.
+            ItemInfo item = requireNonNull(payload.getItem());
+            d.dragInfo = item instanceof WorkspaceItemInfo shortcut ? shortcut.clone() : item;
         }
 
         ItemInfo info = d.dragInfo;
