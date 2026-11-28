@@ -547,6 +547,8 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
                 && (container == CONTAINER_HOTSEAT || container == CONTAINER_DESKTOP
                 || /* Folder */ container > 0)) {
             shortcuts.add(REMOVE);
+        } else if (Utilities.isDesktopFormFactor(this)) {
+            shortcuts.add(SystemShortcut::createSendToDesktop);
         } else if (Utilities.isWorkspaceEditAllowed(this) && isPinnable
                 && (container == CONTAINER_ALL_APPS
                 || container == CONTAINER_ALL_APPS_PREDICTION)) {

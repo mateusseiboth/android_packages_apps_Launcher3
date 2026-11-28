@@ -274,7 +274,8 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
     public static class RemoveApp<T extends ActivityContext> extends SystemShortcut<T> {
 
         public RemoveApp(T target, ItemInfo itemInfo, @NonNull View originalView) {
-            super(R.drawable.ic_remove_no_shadow, R.string.remove_system_shortcut_label, target,
+            super(R.drawable.ic_remove_no_shadow,
+                    SendToDesktop.buildRemoveLabel(originalView.getContext(), itemInfo), target,
                     itemInfo, originalView, false);
         }
 
@@ -288,6 +289,36 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
         }
     }
 
+
+    /**
+     * "Send to desktop" in the menu of an app on the desktop form factor ({@link SendToDesktop}),
+     * for every list of apps: taskbar, its app list and search results, All Apps.
+     */
+    @Nullable
+    public static <T extends ActivityContext> SystemShortcut<T> createSendToDesktop(
+            T target, ItemInfo itemInfo, @Nullable View originalView) {
+        if (originalView == null
+                || !SendToDesktop.isOffered(originalView.getContext(), itemInfo)) {
+            return null;
+        }
+        return new SendToDesktopShortcut<>(target, itemInfo, originalView);
+    }
+
+    private static class SendToDesktopShortcut<T extends ActivityContext>
+            extends SystemShortcut<T> {
+
+        SendToDesktopShortcut(T target, ItemInfo itemInfo, @NonNull View originalView) {
+            super(R.drawable.ic_plus, R.string.send_to_desktop_label, target, itemInfo,
+                    originalView, false);
+        }
+
+        @Override
+        public void onClick(View view) {
+            dismissTaskMenuView();
+            AbstractFloatingView.closeAllOpenViews(mTarget);
+            SendToDesktop.send(view.getContext(), mItemInfo);
+        }
+    }
 
     public static final Factory<ActivityContext> ADD_TO_HOME_SCREEN =
             (activity, itemInfo, originalView) -> {

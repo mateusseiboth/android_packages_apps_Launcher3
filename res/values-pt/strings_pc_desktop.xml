@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 The LineageOS Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="send_to_desktop_label">Enviar para a área de trabalho</string>
+    <string name="remove_from_desktop_label">Remover da área de trabalho</string>
+    <string name="desktop_files_open_with_label">Abrir com</string>
+    <string name="desktop_files_cut_label">Recortar</string>
+    <string name="desktop_files_show_in_files_label">Mostrar no Arquivos</string>
+    <string name="desktop_paste_label">Colar</string>
+    <string name="desktop_arrange_label">Organizar por nome</string>
+    <string name="desktop_change_wallpaper_label">Alterar plano de fundo</string>
+    <string name="desktop_paste_failed">Alguns itens não foram colados. Tente de novo.</string>
+    <string name="desktop_files_no_app">Nenhum app abre este arquivo.</string>
+</resources>

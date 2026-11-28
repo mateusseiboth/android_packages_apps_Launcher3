@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 The LineageOS Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<!-- The desktop of a PC (desktop form factor): its files, its menus and the apps sent to it. -->
+<resources>
+    <!-- Menu item of an app wherever apps are listed: puts the app on the desktop. [CHAR LIMIT=40] -->
+    <string name="send_to_desktop_label">Send to desktop</string>
+    <!-- Menu item of an app on the desktop: takes it off the desktop. [CHAR LIMIT=40] -->
+    <string name="remove_from_desktop_label">Remove from desktop</string>
+    <!-- Menu item of a file on the desktop: lists the apps that open it. [CHAR LIMIT=30] -->
+    <string name="desktop_files_open_with_label">Open with</string>
+    <!-- Menu item of a file on the desktop: puts it aside to be moved with Paste. [CHAR LIMIT=30] -->
+    <string name="desktop_files_cut_label">Cut</string>
+    <!-- Menu item of a file on the desktop: opens the Files app at the desktop folder. [CHAR LIMIT=40] -->
+    <string name="desktop_files_show_in_files_label">Show in Files</string>
+    <!-- Menu item of the empty desktop: brings the copied or cut files here. [CHAR LIMIT=30] -->
+    <string name="desktop_paste_label">Paste</string>
+    <!-- Menu item of the empty desktop: lines the icons up from the top, by name. [CHAR LIMIT=30] -->
+    <string name="desktop_arrange_label">Arrange by name</string>
+    <!-- Menu item of the empty desktop: opens the wallpaper picker. [CHAR LIMIT=40] -->
+    <string name="desktop_change_wallpaper_label">Change wallpaper</string>
+    <!-- Message when files could not be pasted on the desktop. [CHAR LIMIT=80] -->
+    <string name="desktop_paste_failed">Some items could not be pasted. Try again.</string>
+    <!-- Message when no app opens a file on the desktop. [CHAR LIMIT=80] -->
+    <string name="desktop_files_no_app">No app opens this file.</string>
+</resources>

@@ -151,6 +151,8 @@ public class TaskbarPopupController implements TaskbarControllers.LoggableTaskba
         }
         // Apps in the taskbar's All Apps (desktop form factor only, see AllAppsUninstall).
         shortcuts.add(SystemShortcut::createUninstallFromAllApps);
+        // Every app of the taskbar and its All Apps (desktop form factor only, see SendToDesktop).
+        shortcuts.add(SystemShortcut::createSendToDesktop);
 
         if (Flags.enableMultiInstanceMenuTaskbar()
                 && DesktopModeStatus.canEnterDesktopMode(mContext)
