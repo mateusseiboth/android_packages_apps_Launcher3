@@ -536,6 +536,10 @@ public class LoaderTask implements Runnable {
                         .createBrowserIconMigrator(loadedItems,
                                 mModelTaskController.getModelWriter()).performMigration();
             }
+            if (DesktopAppsCleanup.isDue(mContext, mPrefs, mIsRestoreFromBackup)) {
+                DesktopAppsCleanup.apply(
+                        loadedItems, mModelTaskController.getModelWriter(), mPrefs);
+            }
 
             mBgDataModel.dataLoadComplete(loadedItems, name /* reason */);
         }

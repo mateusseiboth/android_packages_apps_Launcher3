@@ -881,6 +881,11 @@ public final class Utilities {
         }
     }
 
+    /** Returns whether the launcher runs on the desktop form factor (a PC). */
+    public static boolean isDesktopFormFactor(Context context) {
+        return context.getResources().getBoolean(R.bool.desktop_form_factor);
+    }
+
     /**
      * Returns whether mouse interaction changes intended for the desktop form factor should be
      * enabled.
