@@ -133,6 +133,12 @@ constructor(
                 }
             }
 
+        // The Desktop folder is there from the start, for the Files app's sidebar and other apps.
+        externalStorageDirectoryMountedFuture.thenRunAsync(
+            { runCatching { homeScreenFolder().mkdirs() } },
+            executorService,
+        )
+
         val uri = MediaStore.Files.getContentUri(VOLUME_EXTERNAL_PRIMARY)
         context.contentResolver.registerContentObserver(uri, true, observer)
         lifecycle.addCloseable { context.contentResolver.unregisterContentObserver(observer) }
