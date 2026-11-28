@@ -505,6 +505,9 @@
     <dimen name="taskbar_button_margin_split">48dp</dimen>
     <dimen name="taskbar_button_margin_6_5">75dp</dimen>
     <dimen name="taskbar_button_margin_default">48dp</dimen>
+    <!-- On a PC's desktop the 3 buttons sit at the right end of the taskbar, not lined up with a
+         tablet's grid (taskbar_button_margin_6_5 is 219.6dp in landscape). -->
+    <dimen name="taskbar_button_margin_desktop">8dp</dimen>
 
     <!--  Taskbar contextual button group pill  -->
     <dimen name="taskbar_contextual_group_padding_start">12dp</dimen>

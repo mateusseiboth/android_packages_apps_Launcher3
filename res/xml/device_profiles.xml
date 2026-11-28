@@ -333,7 +333,7 @@
         launcher:numExtendedHotseatIcons="24"
         launcher:numAllAppsColumns="6"
         launcher:isScalable="true"
-        launcher:inlineNavButtonsEndSpacing="@dimen/taskbar_button_margin_6_5"
+        launcher:inlineNavButtonsEndSpacing="@dimen/taskbar_button_margin_desktop"
         launcher:devicePaddingId="@xml/paddings_6x5"
         launcher:dbFile="launcher_10_by_8.db"
         launcher:defaultLayoutId="@xml/default_workspace_desktop"
