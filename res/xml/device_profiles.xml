@@ -318,10 +318,14 @@
 
     </grid-option>
 
+    <!-- The desktop of a PC: a grid of small cells, like a computer's desktop, its rows and
+         columns by display size (grid_size_desktop). Cells near 96dp, 48dp icons, 12sp labels;
+         the hotseat is the taskbar. -->
     <grid-option
-        launcher:name="desktop_6_by_5"
-        launcher:numRows="5"
-        launcher:numColumns="6"
+        launcher:name="desktop"
+        launcher:gridSizeSpecsId="@xml/grid_size_desktop"
+        launcher:numRows="8"
+        launcher:numColumns="10"
         launcher:numSearchContainerColumns="3"
         launcher:numFolderRows="3"
         launcher:numFolderColumns="3"
@@ -331,7 +335,7 @@
         launcher:isScalable="true"
         launcher:inlineNavButtonsEndSpacing="@dimen/taskbar_button_margin_6_5"
         launcher:devicePaddingId="@xml/paddings_6x5"
-        launcher:dbFile="launcher_6_by_5.db"
+        launcher:dbFile="launcher_10_by_8.db"
         launcher:defaultLayoutId="@xml/default_workspace_desktop"
         launcher:deviceCategory="desktop" >
 
@@ -339,18 +343,18 @@
             launcher:name="Desktop"
             launcher:minWidthDps="900"
             launcher:minHeightDps="820"
-            launcher:minCellHeight="120"
-            launcher:minCellWidth="102"
-            launcher:minCellHeightLandscape="104"
-            launcher:minCellWidthLandscape="120"
-            launcher:iconImageSize="60"
-            launcher:iconTextSize="14"
+            launcher:minCellHeight="96"
+            launcher:minCellWidth="96"
+            launcher:minCellHeightLandscape="96"
+            launcher:minCellWidthLandscape="96"
+            launcher:iconImageSize="48"
+            launcher:iconTextSize="12"
             launcher:borderSpaceHorizontal="16"
-            launcher:borderSpaceVertical="64"
-            launcher:borderSpaceLandscapeHorizontal="64"
+            launcher:borderSpaceVertical="16"
+            launcher:borderSpaceLandscapeHorizontal="80"
             launcher:borderSpaceLandscapeVertical="16"
-            launcher:horizontalMargin="54"
-            launcher:horizontalMarginLandscape="120"
+            launcher:horizontalMargin="24"
+            launcher:horizontalMarginLandscape="48"
             launcher:allAppsCellWidth="104"
             launcher:allAppsCellHeight="88"
             launcher:allAppsCellWidthLandscape="104"

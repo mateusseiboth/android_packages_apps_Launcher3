@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2026 The LineageOS Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<!-- Rows and columns of a PC's desktop by display size: the biggest grid whose minimum the display
+     reaches is used. Sized so that cells stay near 96dp on 1366x768, 1600x900, 1920x1080 and
+     2560x1440 screens at a density of 160. -->
+<GridSizeSpecs xmlns:launcher="http://schemas.android.com/apk/res-auto">
+    <GridSize
+        launcher:numGridRows="6"
+        launcher:numGridColumns="8"
+        launcher:minDeviceWidthPx="0"
+        launcher:minDeviceHeightPx="0"
+        launcher:dbFile="launcher_8_by_6.db"
+        launcher:defaultLayoutId="@xml/default_workspace_desktop" />
+    <GridSize
+        launcher:numGridRows="7"
+        launcher:numGridColumns="9"
+        launcher:minDeviceWidthPx="1500"
+        launcher:minDeviceHeightPx="880"
+        launcher:dbFile="launcher_9_by_7.db"
+        launcher:defaultLayoutId="@xml/default_workspace_desktop" />
+    <GridSize
+        launcher:numGridRows="8"
+        launcher:numGridColumns="10"
+        launcher:minDeviceWidthPx="1680"
+        launcher:minDeviceHeightPx="1040"
+        launcher:dbFile="launcher_10_by_8.db"
+        launcher:defaultLayoutId="@xml/default_workspace_desktop" />
+    <GridSize
+        launcher:numGridRows="10"
+        launcher:numGridColumns="13"
+        launcher:minDeviceWidthPx="2400"
+        launcher:minDeviceHeightPx="1400"
+        launcher:dbFile="launcher_13_by_10.db"
+        launcher:defaultLayoutId="@xml/default_workspace_desktop" />
+</GridSizeSpecs>
