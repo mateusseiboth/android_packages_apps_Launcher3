@@ -334,6 +334,13 @@ constructor(
             }
             .getOrNull()
 
+    private fun readRelativePath(mediaUri: Uri): String? =
+        runCatching {
+                context.contentResolver.query(mediaUri, arrayOf(RELATIVE_PATH), null, null, null)
+                    ?.use { if (it.moveToFirst()) it.getStringOrNull(0) else null }
+            }
+            .getOrNull()
+
     private fun homeScreenFolder(): File =
         environmentWrapper.getExternalStorageDirectory().resolve(HOME_SCREEN_FOLDER_RELATIVE_PATH)
 
@@ -383,7 +390,9 @@ constructor(
                 // NOTE: The selection criteria below prevents moving a URI to a path it already
                 // occupies; MediaProvider has additional protections to prevent recursive moves.
                 val relativePath = "$HOME_SCREEN_FOLDER_RELATIVE_PATH${relativeFolderPath ?: ""}"
+                // A cut item pasted where it already is stays there.
                 success =
+                    readRelativePath(mediaUri) == relativePath ||
                     (context.contentResolver.update(
                         /*uri=*/ mediaUri,
                         /*contentValues=*/ ContentValues().apply {

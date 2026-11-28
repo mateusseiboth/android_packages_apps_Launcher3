@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import com.android.launcher3.BubbleTextView;
 import com.android.launcher3.BuildConfig;
+import com.android.launcher3.DesktopSelection;
 import com.android.launcher3.Flags;
 import com.android.launcher3.InvariantDeviceProfile;
 import com.android.launcher3.Launcher;
@@ -99,6 +100,8 @@ public class ItemClickHandler {
 
         Launcher launcher = Launcher.getLauncher(v.getContext());
         if (!launcher.getWorkspace().isFinishedSwitchingState()) return;
+        // Ctrl or Shift+click on the desktop of a PC selects instead of opening.
+        if (DesktopSelection.onItemClick(launcher, v)) return;
 
         Trace.beginSection("ItemClickHandler#onClick");
         Object tag = v.getTag();

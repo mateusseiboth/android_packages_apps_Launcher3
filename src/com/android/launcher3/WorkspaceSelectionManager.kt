@@ -142,11 +142,31 @@ class WorkspaceSelectionManagerImpl @Inject constructor(val activityContext: Act
                 performSelection(listOf(view), SelectionAction.TOGGLE_SELECTION)
             }
             ItemSelectionType.RANGE -> {
-                // TODO: Calculate the list of views to select between [view] and [anchorView].
-                performSelection(emptyList(), SelectionAction.APPEND_SELECTION)
+                performSelection(findRange(anchorView, view), SelectionAction.NEW_SELECTION)
             }
         }
-        anchorView = view
+        // A range keeps its anchor, so that the next Shift+click selects from the same icon.
+        if (itemSelectionType != ItemSelectionType.RANGE || anchorView == null) {
+            anchorView = view
+        }
+    }
+
+    /** The views from [anchor] to [view] in reading order (page, row, column), both included. */
+    private fun findRange(anchor: View?, view: View): List<View> {
+        val ordered =
+            getSelectableViews()
+                .filter { it.tag is ItemInfo }
+                .sortedWith(
+                    compareBy<View>(
+                        { (it.tag as ItemInfo).screenId },
+                        { (it.tag as ItemInfo).cellY },
+                        { (it.tag as ItemInfo).cellX },
+                    )
+                )
+        val end = ordered.indexOf(view)
+        val start = anchor?.let(ordered::indexOf)?.takeIf { it >= 0 } ?: end
+        if (end < 0) return listOf(view)
+        return ordered.subList(minOf(start, end), maxOf(start, end) + 1)
     }
 
     override fun updateBoxSelection(boxBounds: Rect) {

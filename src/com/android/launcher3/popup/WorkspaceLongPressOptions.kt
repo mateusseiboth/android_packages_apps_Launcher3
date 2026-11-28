@@ -25,10 +25,12 @@ import com.android.launcher3.BuildConfig
 import com.android.launcher3.Flags
 import com.android.launcher3.Launcher
 import com.android.launcher3.LauncherSettings.Favorites
+import com.android.launcher3.LauncherAppState
 import com.android.launcher3.LauncherState
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.android.launcher3.config.FeatureFlags
+import com.android.launcher3.homescreenfiles.DesktopFileActions
 import com.android.launcher3.homescreenfiles.HomeScreenFilesProvider
 import com.android.launcher3.homescreenfiles.HomeScreenFilesUpdate.Extras.Companion.builder
 import com.android.launcher3.logging.StatsLogManager.LauncherEvent.IGNORE
@@ -36,6 +38,7 @@ import com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCHER_ALL_
 import com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCHER_CREATE_NEW_FOLDER_BUTTON_TAP_OR_LONGPRESS
 import com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCHER_SETTINGS_BUTTON_TAP_OR_LONGPRESS
 import com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCHER_WIDGETSTRAY_BUTTON_TAP_OR_LONGPRESS
+import com.android.launcher3.model.ArrangeDesktopTask
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemCoordinates
 import com.android.launcher3.model.data.WorkspaceItemInfo
@@ -51,7 +54,74 @@ import com.android.launcher3.views.OptionsPopupView.OptionItem
 object WorkspaceLongPressOptions {
 
     @JvmStatic
-    fun getAll(ctx: Context): List<PopupData> = buildList {
+    fun getAll(ctx: Context): List<PopupData> =
+        if (Utilities.isDesktopFormFactor(ctx)) getDesktopOptions(ctx) else getHomeOptions(ctx)
+
+    /** The menu of the empty desktop of a PC: as on a computer's desktop. */
+    private fun getDesktopOptions(ctx: Context): List<PopupData> = buildList {
+        if (HomeScreenFilesProvider.INSTANCE[ctx].canCreateNewFolder()) {
+            add(newFolderOption)
+        }
+        if (DesktopFileActions.canPaste(ctx)) {
+            add(
+                PopupData(R.drawable.ic_desktop_paste, R.string.desktop_paste_label, SYSTEM_SHORTCUT) {
+                    ac,
+                    _,
+                    _ ->
+                    (ac as? Launcher)?.let(DesktopFileActions::paste)
+                }
+            )
+        }
+        add(
+            PopupData(R.drawable.ic_desktop_arrange, R.string.desktop_arrange_label, SYSTEM_SHORTCUT) {
+                ac,
+                _,
+                _ ->
+                LauncherAppState.getInstance(ac.asContext())
+                    .model
+                    .enqueueModelUpdateTask(ArrangeDesktopTask())
+            }
+        )
+        add(
+            PopupData(
+                R.drawable.ic_palette,
+                R.string.desktop_change_wallpaper_label,
+                SYSTEM_SHORTCUT,
+                IGNORE,
+            ) { ac, _, v ->
+                startWallpaperPicker(ac, v)
+            }
+        )
+        add(settingsOption)
+    }
+
+    private val newFolderOption =
+        PopupData(
+            R.drawable.ic_create_new_folder,
+            R.string.create_new_folder_button_text,
+            SYSTEM_SHORTCUT,
+            LAUNCHER_CREATE_NEW_FOLDER_BUTTON_TAP_OR_LONGPRESS,
+        ) { ac, _, _ ->
+            createNewFolder(ac)
+        }
+
+    private val settingsOption =
+        PopupData(
+            R.drawable.ic_setting,
+            R.string.settings_button_text,
+            SYSTEM_SHORTCUT,
+            LAUNCHER_SETTINGS_BUTTON_TAP_OR_LONGPRESS,
+        ) { ac, _, _ ->
+            TestLogging.recordEvent(TestProtocol.SEQUENCE_MAIN, "start: startSettings")
+            ac.asContext()
+                .startActivity(
+                    Intent(Intent.ACTION_APPLICATION_PREFERENCES)
+                        .setPackage(ac.asContext().packageName)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                )
+        }
+
+    private fun getHomeOptions(ctx: Context): List<PopupData> = buildList {
         add(
             PopupData(
                 R.drawable.ic_palette,
@@ -136,36 +206,10 @@ object WorkspaceLongPressOptions {
             )
         }
 
-        add(
-            PopupData(
-                R.drawable.ic_setting,
-                R.string.settings_button_text,
-                SYSTEM_SHORTCUT,
-                LAUNCHER_SETTINGS_BUTTON_TAP_OR_LONGPRESS,
-            ) { ac, _, _ ->
-                TestLogging.recordEvent(TestProtocol.SEQUENCE_MAIN, "start: startSettings")
-                ac.asContext()
-                    .startActivity(
-                        Intent(Intent.ACTION_APPLICATION_PREFERENCES)
-                            .setPackage(ac.asContext().packageName)
-                            .addFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            )
-                    )
-            }
-        )
+        add(settingsOption)
 
         if (HomeScreenFilesProvider.INSTANCE[ctx].canCreateNewFolder()) {
-            add(
-                PopupData(
-                    R.drawable.ic_create_new_folder,
-                    R.string.create_new_folder_button_text,
-                    SYSTEM_SHORTCUT,
-                    LAUNCHER_CREATE_NEW_FOLDER_BUTTON_TAP_OR_LONGPRESS,
-                ) { ac, _, _ ->
-                    createNewFolder(ac)
-                }
-            )
+            add(newFolderOption)
         }
     }
 

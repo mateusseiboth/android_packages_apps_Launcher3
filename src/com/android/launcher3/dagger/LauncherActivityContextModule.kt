@@ -15,7 +15,7 @@
  */
 package com.android.launcher3.dagger
 
-import com.android.launcher3.Flags
+import com.android.launcher3.DesktopSelection
 import com.android.launcher3.WorkspaceSelectionManager
 import com.android.launcher3.WorkspaceSelectionManagerImpl
 import com.android.launcher3.WorkspaceSelectionManagerStub
@@ -31,7 +31,8 @@ class LauncherActivityContextModule {
     fun provideWorkspaceSelectionManager(
         activityContext: ActivityContext
     ): WorkspaceSelectionManager {
-        return if (Flags.enableWorkspaceSelection()) {
+        // Always on a PC, whose desktop selects its icons and files (DesktopSelection).
+        return if (DesktopSelection.isEnabled(activityContext.asContext())) {
             WorkspaceSelectionManagerImpl(activityContext)
         } else {
             WorkspaceSelectionManagerStub()

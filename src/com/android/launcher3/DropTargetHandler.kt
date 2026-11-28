@@ -17,6 +17,7 @@ import com.android.launcher3.model.data.LauncherAppWidgetInfo
 import com.android.launcher3.util.IntSet
 import com.android.launcher3.util.PendingRequestArgs
 import com.android.launcher3.views.Snackbar
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
 /**
@@ -117,8 +118,14 @@ class DropTargetHandler(
         Snackbar.show(launcher, R.string.item_removed, R.string.undo, onDismissed, onUndoClicked)
     }
 
-    private fun onDeleteCompleteForHomeScreenFile(item: ItemInfo) {
-        val title = item.title.toString()
+    private fun onDeleteCompleteForHomeScreenFile(item: ItemInfo) =
+        trashHomeScreenFiles(listOf(item))
+
+    /**
+     * Moves the desktop's [items] to the trash together (a selection on a PC): one message, whose
+     * Undo puts them all back.
+     */
+    fun trashHomeScreenFiles(items: List<ItemInfo>) {
         val restoreFromTrashResultHandler: (Boolean) -> Unit = { success ->
             if (!success) {
                 Snackbar.show(
@@ -128,28 +135,33 @@ class DropTargetHandler(
                 /*onDismissed=*/ {}
             }
         }
-        val moveToTrashResultHandler: (String?) -> Unit = { trashPath ->
-            if (trashPath != null) {
+        val moveToTrashResultHandler: (List<String>) -> Unit = { trashPaths ->
+            if (trashPaths.isNotEmpty()) {
                 Snackbar.show(
                     launcher,
                     launcher.resources.getString(R.string.home_screen_files_moved_to_trash_message),
                     R.string.undo,
                     /*onDismissed=*/ {},
                     /*onActionClicked=*/ {
-                        homeScreenFilesProvider
-                            .restoreFromTrash(trashPath)
-                            .thenAcceptAsync(restoreFromTrashResultHandler, mainExecutor)
+                        val restores = trashPaths.map(homeScreenFilesProvider::restoreFromTrash)
+                        CompletableFuture.allOf(*restores.toTypedArray()).thenRunAsync(
+                            { restoreFromTrashResultHandler(restores.all { it.getNow(false) }) },
+                            mainExecutor,
+                        )
                     },
                 )
-            } else {
+            }
+            if (trashPaths.size < items.size) {
                 Snackbar.show(launcher, R.string.home_screen_files_move_to_trash_error_message)
                 /*onDismissed=*/ {}
             }
         }
 
-        homeScreenFilesProvider
-            .moveToTrash(title)
-            .thenAcceptAsync(moveToTrashResultHandler, mainExecutor)
+        val moves = items.map { homeScreenFilesProvider.moveToTrash(it.title.toString()) }
+        CompletableFuture.allOf(*moves.toTypedArray()).thenRunAsync(
+            { moveToTrashResultHandler(moves.mapNotNull { it.getNow(null) }) },
+            mainExecutor,
+        )
     }
 
     fun getDragLayer(): DragLayer {

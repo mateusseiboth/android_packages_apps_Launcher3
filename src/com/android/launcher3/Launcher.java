@@ -173,6 +173,7 @@ import com.android.launcher3.dragndrop.DragView;
 import com.android.launcher3.dragndrop.LauncherDragController;
 import com.android.launcher3.folder.Folder;
 import com.android.launcher3.folder.FolderIcon;
+import com.android.launcher3.homescreenfiles.DesktopFileActions;
 import com.android.launcher3.keyboard.ViewGroupFocusHelper;
 import com.android.launcher3.lineage.LineageUtils;
 import com.android.launcher3.logger.LauncherAtom;
@@ -1923,6 +1924,7 @@ public class Launcher extends StatefulActivity<LauncherState>
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mTouchInProgress = true;
+                DesktopSelection.onTouchDown(ev);
                 break;
             case MotionEvent.ACTION_UP:
                 mLastTouchUpTime = SystemClock.uptimeMillis();
@@ -2420,6 +2422,8 @@ public class Launcher extends StatefulActivity<LauncherState>
      * Shows the default options popup
      */
     public void showDefaultOptions(float x, float y) {
+        // Paste on the desktop of a PC starts from where its menu opened.
+        DesktopFileActions.onMenuShown(x, y);
         Rect pos = new Rect();
         pos.offsetTo((int) x, (int) y);
         pos.inset(-20, -20);

@@ -27,6 +27,7 @@ import android.view.KeyboardShortcutInfo;
 import android.view.Menu;
 
 import com.android.launcher3.AbstractFloatingView;
+import com.android.launcher3.DesktopKeys;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherState;
 import com.android.launcher3.R;
@@ -79,6 +80,10 @@ public class KeyboardShortcutsDelegate {
      * @return weather the event is already handled and if it should be passed to other components.
      */
     public Boolean onKeyShortcut(int keyCode, KeyEvent event) {
+        Boolean desktopResult = DesktopKeys.onKeyShortcut(mLauncher, keyCode, event);
+        if (desktopResult != null) {
+            return desktopResult;
+        }
         if (event.hasModifiers(KeyEvent.META_CTRL_ON)) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_A:
@@ -111,6 +116,10 @@ public class KeyboardShortcutsDelegate {
      * @see android.view.KeyEvent
      */
     public Boolean onKeyDown(int keyCode, KeyEvent event) {
+        Boolean desktopResult = DesktopKeys.onKeyDown(mLauncher, keyCode, event);
+        if (desktopResult != null) {
+            return desktopResult;
+        }
         // Ignore escape if pressed in conjunction with any modifier keys.
         if (keyCode == KeyEvent.KEYCODE_ESCAPE && event.hasNoModifiers()) {
             AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(mLauncher);

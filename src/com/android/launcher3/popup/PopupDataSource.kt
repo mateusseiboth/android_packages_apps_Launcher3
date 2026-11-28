@@ -16,8 +16,7 @@
 
 package com.android.launcher3.popup
 
-import android.content.ClipData
-import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Process
 import android.util.Log
@@ -39,6 +38,9 @@ import com.android.launcher3.SecondaryDropTarget
 import com.android.launcher3.Utilities
 import com.android.launcher3.accessibility.LauncherAccessibilityDelegate
 import com.android.launcher3.allapps.PrivateProfileManager
+import com.android.launcher3.dagger.ApplicationContext
+import com.android.launcher3.homescreenfiles.DesktopClipboard
+import com.android.launcher3.homescreenfiles.DesktopFileActions
 import com.android.launcher3.homescreenfiles.HomeScreenFilesRenameDialogFactory
 import com.android.launcher3.homescreenfiles.HomeScreenFilesUtils
 import com.android.launcher3.homescreenfiles.homeScreenFile
@@ -129,7 +131,12 @@ object AppWidgetSystemShortcuts : PopupDataMapper {
 
 class FileSystemShortcuts
 @Inject
-constructor(private val renameDialogFactory: HomeScreenFilesRenameDialogFactory) : PopupDataMapper {
+constructor(
+    @ApplicationContext context: Context,
+    private val renameDialogFactory: HomeScreenFilesRenameDialogFactory,
+) : PopupDataMapper {
+
+    private val isFilesAppInstalled = DesktopFileActions.isFilesAppInstalled(context)
 
     private val openHomeScreenFile =
         PopupData(
@@ -141,20 +148,34 @@ constructor(private val renameDialogFactory: HomeScreenFilesRenameDialogFactory)
             activityContext.startActivitySafely(view, itemInfo.intent, itemInfo)
         }
 
+    private val openWithFileSystemItem =
+        PopupData(
+            iconResId = R.drawable.ic_desktop_open_with,
+            labelResId = R.string.desktop_files_open_with_label,
+            category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
+        ) { activityContext: ActivityContext, itemInfo: ItemInfo, view: View ->
+            DesktopFileActions.showOpenWith(activityContext, itemInfo, view)
+        }
+
+    // Copy and Cut take every selected file when the item is selected (desktop of a PC); the Files
+    // app pastes them too (DesktopClipboard).
     private val copyFileSystemItem =
         PopupData(
             iconResId = R.drawable.ic_home_screen_files_context_menu_copy,
             labelResId = R.string.home_screen_files_context_menu_copy_label,
             category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
             eventId = LauncherEvent.LAUNCHER_HOME_SCREEN_FILES_COPY_VIA_CONTEXT_MENU,
-        ) { activityContext: ActivityContext, itemInfo: ItemInfo, _: View ->
-            val file = itemInfo.homeScreenFile ?: return@PopupData
-            activityContext
-                .asContext()
-                .getSystemService(ClipboardManager::class.java)
-                ?.setPrimaryClip(
-                    ClipData(/* label= */ "", arrayOf(file.mimeType), ClipData.Item(file.uri))
-                )
+        ) { activityContext: ActivityContext, _: ItemInfo, view: View ->
+            DesktopFileActions.copy(activityContext, view, DesktopClipboard.MODE_COPY)
+        }
+
+    private val cutFileSystemItem =
+        PopupData(
+            iconResId = R.drawable.ic_desktop_cut,
+            labelResId = R.string.desktop_files_cut_label,
+            category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
+        ) { activityContext: ActivityContext, _: ItemInfo, view: View ->
+            DesktopFileActions.copy(activityContext, view, DesktopClipboard.MODE_CUT)
         }
 
     private val renameFileSystemItem =
@@ -166,6 +187,15 @@ constructor(private val renameDialogFactory: HomeScreenFilesRenameDialogFactory)
         ) { activityContext: ActivityContext, itemInfo: ItemInfo, _: View ->
             val file = itemInfo.homeScreenFile ?: return@PopupData
             renameDialogFactory.create(activityContext, file).show()
+        }
+
+    private val showInFilesFileSystemItem =
+        PopupData(
+            iconResId = R.drawable.ic_desktop_folder,
+            labelResId = R.string.desktop_files_show_in_files_label,
+            category = PopupCategory.SYSTEM_SHORTCUT_FIXED,
+        ) { activityContext: ActivityContext, itemInfo: ItemInfo, view: View ->
+            DesktopFileActions.showInFiles(activityContext, view, itemInfo.homeScreenFile)
         }
 
     private val deleteFileSystemItem =
@@ -180,6 +210,13 @@ constructor(private val renameDialogFactory: HomeScreenFilesRenameDialogFactory)
             popupAction = PopupDataSource.removePopupData.popupAction,
         )
 
+    // Every selected file goes to the trash together, with one Undo.
+    private val trashFileSystemItems =
+        deleteFileSystemItem.copy { activityContext: ActivityContext, _: ItemInfo, view: View ->
+            AbstractFloatingView.closeAllOpenViews(activityContext)
+            DesktopFileActions.trash(activityContext, view)
+        }
+
     override fun getPopupDataByItemInfo(itemInfo: ItemInfo): List<PopupData>? {
         return if (
             itemInfo.itemType != ITEM_TYPE_FILE_SYSTEM_FILE &&
@@ -189,13 +226,23 @@ constructor(private val renameDialogFactory: HomeScreenFilesRenameDialogFactory)
         else
             buildList {
                 add(openHomeScreenFile)
+                if (itemInfo.itemType == ITEM_TYPE_FILE_SYSTEM_FILE) {
+                    add(openWithFileSystemItem)
+                }
                 if (enableHomeScreenFilesCopyPaste()) {
                     add(copyFileSystemItem)
+                    add(cutFileSystemItem)
                 }
                 if (enableHomeScreenFilesRenaming()) {
                     add(renameFileSystemItem)
                 }
-                add(deleteFileSystemItem)
+                if (isFilesAppInstalled) {
+                    add(showInFilesFileSystemItem)
+                }
+                add(
+                    if (HomeScreenFilesUtils.isTrashingEnabled()) trashFileSystemItems
+                    else deleteFileSystemItem
+                )
             }
     }
 }

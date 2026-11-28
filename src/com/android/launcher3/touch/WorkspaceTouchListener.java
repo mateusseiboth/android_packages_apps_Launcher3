@@ -21,7 +21,6 @@ import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_POINTER_UP;
 import static android.view.MotionEvent.ACTION_UP;
 
-import static com.android.launcher3.Flags.enableWorkspaceSelection;
 import static com.android.launcher3.LauncherState.ALL_APPS;
 import static com.android.launcher3.LauncherState.NORMAL;
 import static com.android.launcher3.Utilities.shouldEnableMouseInteractionChanges;
@@ -42,6 +41,7 @@ import android.view.ViewConfiguration;
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.BoxSelectionHelper;
 import com.android.launcher3.CellLayout;
+import com.android.launcher3.DesktopSelection;
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherPrefs;
@@ -87,7 +87,7 @@ public class WorkspaceTouchListener extends GestureDetector.SimpleOnGestureListe
         // likely to cause movement.
         mTouchSlop = 2 * ViewConfiguration.get(launcher).getScaledTouchSlop();
         mGestureDetector = new GestureDetector(workspace.getContext(), this);
-        mBoxSelectionHelper = enableWorkspaceSelection()
+        mBoxSelectionHelper = DesktopSelection.isEnabled(launcher)
                 ? new BoxSelectionHelper(launcher, workspace)
                 : null;
     }
